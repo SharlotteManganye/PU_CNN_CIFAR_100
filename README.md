@@ -1,1 +1,1 @@
-# Convolutional-Neural-Networks
+# Product Unit Convolutional-Neural-Networks
