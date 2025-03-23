@@ -9,17 +9,34 @@ def load_config(config_path):
         return yaml.safe_load(file)
 
 
-def data_mean_std(cifar_trainset):
+def print_section(title=""):
+    line = "-" * 50
+    if title:
+        print(f"\n{line}\n{title.center(50)}\n{line}\n")
+    else:
+        print(f"\n{line}\n")
 
-    imgs = [item[0] for item in cifar_trainset]
+
+def data_mean_std_greyscale(trainset):
+
+    imgs = [item[0] for item in trainset]
     imgs = torch.stack(imgs, dim=0).numpy()
 
-    # calculate mean over each channel (r,g,b)
+    mean = imgs.mean()
+    std = imgs.std()
+
+    return mean, std
+
+
+def data_mean_std_rgb(trainset):
+
+    imgs = [item[0] for item in trainset]
+    imgs = torch.stack(imgs, dim=0).numpy()
+
     mean_r = imgs[:, 0, :, :].mean()
     mean_g = imgs[:, 1, :, :].mean()
     mean_b = imgs[:, 2, :, :].mean()
 
-    # calculate std over each channel (r,g,b)
     std_r = imgs[:, 0, :, :].std()
     std_g = imgs[:, 1, :, :].std()
     std_b = imgs[:, 2, :, :].std()
@@ -36,7 +53,8 @@ def dataset_summery(train_dataset, test_dataset):
     class_distribution = Counter(label for _, label in train_dataset)
     sorted_class_distribution = dict(sorted(class_distribution.items()))
 
-    print("Train Dataset -----")
+    print_section("Train Dataset")
+
     print(f"Number of samples: {num_samples}")
     print(f"Image size: {image_size}")
     print(f"Class distribution: {sorted_class_distribution}")
@@ -46,7 +64,8 @@ def dataset_summery(train_dataset, test_dataset):
     class_distribution = Counter(label for _, label in test_dataset)
     sorted_class_distribution = dict(sorted(class_distribution.items()))
 
-    print("Test Dataset -----")
+    print_section("Test Dataset")
+
     print(f"Number of samples: {num_samples}")
     print(f"Image size: {image_size}")
     print(f"Class distribution: {sorted_class_distribution}")

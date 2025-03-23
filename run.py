@@ -36,7 +36,7 @@ if __name__ == "__main__":
     gen_rand_seed = program["gen_rand_seed"]
     gpu = program["gpu"]
 
-    shape = data["shape"]
+    data_set_id = data["data_set_id"]
     test_ratio = data["test_ratio"]
     val_ratio = data["val_ratio"]
 
@@ -51,10 +51,12 @@ if __name__ == "__main__":
     grad_epsilon = training["grad_epsilon"]
     clip_factor = training["clip_factor"]
 
+    print_section("Configuration")
+
     print(f"Seed: {seed}")
     print(f"Gen Rand Seed: {gen_rand_seed}")
     print(f"GPU: {gpu}")
-    print(f"Shape: {shape}")
+    print(f"Data Set ID: {data_set_id}")
     print(f"Test Ratio: {test_ratio}")
     print(f"Validation Ratio: {val_ratio}")
     print(f"Model ID: {model_id}")
@@ -67,39 +69,77 @@ if __name__ == "__main__":
     print(f"Gradient Epsilon: {grad_epsilon}")
     print(f"Clip Factor: {clip_factor}")
 
-    # Set device
-    if torch.cuda.is_available():
-        print(torch.cuda.get_device_name(0))
-    else:
-        print("CUDA is not available. No GPU device found.")
-
     device = "cpu"
-
     if gpu:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    print(f"Device: {device}")
 
     # Get number of workers for CPU
     num_workers = os.cpu_count()
 
-    # Calculate dataset mean and std
-    trainset_mean_std = datasets.CIFAR10(
-        root="./data", train=True, download=True, transform=transforms.ToTensor()
-    )
+    print_section("Data Downloading")
 
-    mean, std = data_mean_std(trainset_mean_std)
+    if data_set_id == 1:
+        # CIFAR10
+        train_dataset_mean_std = datasets.CIFAR10(
+            root="./data", train=True, download=True, transform=transforms.ToTensor()
+        )
 
-    print(f"Dataset Mean (r,g,b): {mean}")
-    print(f"Dataset STD (r,g,b): {std}")
+        mean, std = data_mean_std_rgb(train_dataset_mean_std)
 
-    # Prepare data
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize(mean, std)]
-    )
+        # Prepare data
+        transform = transforms.Compose(
+            [transforms.ToTensor(), transforms.Normalize(mean, std)]
+        )
 
-    train_dataset = datasets.CIFAR10(root="data", train=True, transform=transform)
+        train_dataset = datasets.CIFAR10(root="data", train=True, transform=transform)
 
-    test_dataset = datasets.CIFAR10(root="data", train=False, transform=transform)
-    
+        test_dataset = datasets.CIFAR10(root="data", train=False, transform=transform)
+
+    elif data_set_id == 2:
+        # CIFAR100
+        train_dataset_mean_std = datasets.CIFAR100(
+            root="./data", train=True, download=True, transform=transforms.ToTensor()
+        )
+
+        mean, std = data_mean_std_rgb(train_dataset_mean_std)
+
+        # Prepare data
+        transform = transforms.Compose(
+            [transforms.ToTensor(), transforms.Normalize(mean, std)]
+        )
+
+        train_dataset = datasets.CIFAR100(root="data", train=True, transform=transform)
+
+        test_dataset = datasets.CIFAR100(root="data", train=False, transform=transform)
+
+    elif data_set_id == 3:
+        # MNIST
+        train_dataset_mean_std = datasets.MNIST(
+            root="./data", train=True, download=True, transform=transforms.ToTensor()
+        )
+
+        mean, std = data_mean_std_greyscale(train_dataset_mean_std)
+
+        transform = transforms.Compose(
+            [transforms.ToTensor(), transforms.Normalize(mean, std)]
+        )
+
+        train_dataset = datasets.MNIST(root="data", train=True, transform=transform)
+
+        test_dataset = datasets.MNIST(root="data", train=False, transform=transform)
+
+    else:
+        raise ValueError("Dataset ID not recognised")
+
+    print_section("Train Dataset Mean and STD")
+
+    print(f"Dataset Mean: {mean}")
+    print(f"Dataset STD: {std}")
+
+    image_shape = train_dataset[0][0].shape
+
     dataset_summery(train_dataset, test_dataset)
 
     train_loader, val_loader = get_train_val_loaders(
