@@ -7,6 +7,8 @@ import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 
 from utils import *
+from models import *
+from baseline_models import *
 
 if __name__ == "__main__":
     # Accept config file as command parameter
@@ -32,18 +34,22 @@ if __name__ == "__main__":
     model = config["model"]
     training = config["training"]
 
+    # Program variables
     seed = program["seed"]
     gen_rand_seed = program["gen_rand_seed"]
     gpu = program["gpu"]
 
+    # Data variables
     data_set_id = data["data_set_id"]
     test_ratio = data["test_ratio"]
     val_ratio = data["val_ratio"]
 
+    # Model variables
     model_id = model["model_id"]
     number_channels = model["number_channels"]
     number_classes = model["number_classes"]
 
+    # Training variables
     batch_size = training["batch_size"]
     epochs = training["epochs"]
     learning_rate = training["learning_rate"]
@@ -147,3 +153,166 @@ if __name__ == "__main__":
     )
 
     test_loader = get_test_loader(test_dataset, batch_size, num_workers)
+
+    model
+
+    in_channels = 1
+    out_channels = 1
+    kernel_size = 1
+    image_height = 1
+    image_width = 1
+    fc_input_size = 1
+    fc_hidden_size = 1
+    number_classes = 1
+    fc_dropout_rate = 1
+
+    if model_id == 1:
+        print("Model 1")
+
+        model = model_1(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+
+    elif model_id == 2:
+        print("Model 2")
+
+        model = model_2(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+    elif model_id == 3:
+        print("Model 3")
+
+        model = model_3(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+
+    elif model_id == 4:
+        print("Model 4")
+
+        model = model_4(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+
+    elif model_id == 5:
+        print("Model 5")
+
+        model = model_5(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+    elif model_id == 6:
+        print("Model 6")
+
+        model = baseline_model_1(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+
+    elif model_id == 7:
+        print("Model 7")
+
+        model = baseline_model_2(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+
+    elif model_id == 8:
+        print("Model 8")
+
+        model = baseline_model_3(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+
+    elif model_id == 9:
+        print("Model 9")
+
+        model = baseline_model_4(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+
+    elif model_id == 10:
+        print("Model 10")
+
+        model = baseline_model_5(
+            in_channels,
+            out_channels,
+            kernel_size,
+            image_height,
+            image_width,
+            fc_input_size,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+
+    else:
+        print("Please input a valid model ID")
