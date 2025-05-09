@@ -154,6 +154,8 @@ if __name__ == "__main__":
 
     test_loader = get_test_loader(test_dataset, batch_size, num_workers)
 
+    print_section("Model")
+
     model
 
     in_channels = 1
@@ -167,8 +169,6 @@ if __name__ == "__main__":
     fc_dropout_rate = 1
 
     if model_id == 1:
-        print("Model 1")
-
         model = model_1(
             in_channels,
             out_channels,
@@ -182,8 +182,6 @@ if __name__ == "__main__":
         )
 
     elif model_id == 2:
-        print("Model 2")
-
         model = model_2(
             in_channels,
             out_channels,
@@ -195,9 +193,8 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
-    elif model_id == 3:
-        print("Model 3")
 
+    elif model_id == 3:
         model = model_3(
             in_channels,
             out_channels,
@@ -211,8 +208,6 @@ if __name__ == "__main__":
         )
 
     elif model_id == 4:
-        print("Model 4")
-
         model = model_4(
             in_channels,
             out_channels,
@@ -226,8 +221,6 @@ if __name__ == "__main__":
         )
 
     elif model_id == 5:
-        print("Model 5")
-
         model = model_5(
             in_channels,
             out_channels,
@@ -239,9 +232,8 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
-    elif model_id == 6:
-        print("Model 6")
 
+    elif model_id == 6:
         model = baseline_model_1(
             in_channels,
             out_channels,
@@ -255,8 +247,6 @@ if __name__ == "__main__":
         )
 
     elif model_id == 7:
-        print("Model 7")
-
         model = baseline_model_2(
             in_channels,
             out_channels,
@@ -270,8 +260,6 @@ if __name__ == "__main__":
         )
 
     elif model_id == 8:
-        print("Model 8")
-
         model = baseline_model_3(
             in_channels,
             out_channels,
@@ -285,8 +273,6 @@ if __name__ == "__main__":
         )
 
     elif model_id == 9:
-        print("Model 9")
-
         model = baseline_model_4(
             in_channels,
             out_channels,
@@ -300,8 +286,6 @@ if __name__ == "__main__":
         )
 
     elif model_id == 10:
-        print("Model 10")
-
         model = baseline_model_5(
             in_channels,
             out_channels,
@@ -316,3 +300,5 @@ if __name__ == "__main__":
 
     else:
         print("Please input a valid model ID")
+
+print(model)
