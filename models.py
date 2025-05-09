@@ -1,7 +1,5 @@
 from model_components import *
 
-import numpy as np
-
 
 class model_1(nn.Module):
     def __init__(
@@ -17,12 +15,15 @@ class model_1(nn.Module):
         fc_dropout_rate,
     ):
         super(model_1, self).__init__()
+
         self.pi_conv_layers = ProductUnits(in_channels, out_channels, kernel_size)
+
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
             output_shape = self.pi_conv_layers(dummy_input).shape
 
         fc_input_size = out_channels * output_shape[2] * output_shape[3]
+
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -51,6 +52,7 @@ class model_2(nn.Module):
         fc_dropout_rate,
     ):
         super(model_2, self).__init__()
+
         self.pi_conv_layers1 = ProductUnits(
             in_channels, out_channels, kernel_size=kernel_size
         )
@@ -59,18 +61,12 @@ class model_2(nn.Module):
             out_channels, out_channels, kernel_size=kernel_size
         )
 
-        self.mlp = MLP(
-            fc_input_size=out_channels,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
-        )
-
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
             output_shape = self.pi_conv_layers2(self.pi_conv_layers1(dummy_input)).shape
 
         fc_input_size = out_channels * output_shape[2] * output_shape[3]
+
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -100,19 +96,13 @@ class model_3(nn.Module):
         fc_dropout_rate,
     ):
         super(model_3, self).__init__()
+
         self.conv_layers1 = StandardConv2D(
             in_channels, out_channels, kernel_size=kernel_size
         )
 
         self.pi_conv_layers2 = ProductUnits(
             out_channels, out_channels, kernel_size=kernel_size
-        )
-
-        self.mlp = MLP(
-            fc_input_size=out_channels,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
         )
 
         with torch.no_grad():
@@ -150,6 +140,7 @@ class model_4(nn.Module):
         num_layers,
     ):
         super(model_4, self).__init__()
+
         self.concat_conv_product = ConcatConv2DProductUnits(
             in_channels=in_channels,
             num_layers=num_layers,
@@ -168,6 +159,7 @@ class model_4(nn.Module):
             output_shape = self.conv_layers(self.concat_conv_product(dummy_input)).shape
 
         fc_input_size = out_channels * output_shape[2] * output_shape[3]
+
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -198,7 +190,9 @@ class model_5(nn.Module):
         num_layers,
     ):
         super(model_5, self).__init__()
+
         self.num_layers = num_layers
+
         self.concat_conv_product = ConcatConv2DProductUnits(
             in_channels=in_channels,
             num_layers=num_layers,
