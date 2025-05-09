@@ -9,6 +9,7 @@ import torchvision.transforms as transforms
 from utils import *
 from models import *
 from baseline_models import *
+from train import *
 
 if __name__ == "__main__":
     # Accept config file as command parameter
@@ -304,3 +305,10 @@ if __name__ == "__main__":
         print("Please input a valid model ID")
 
 print(model)
+
+
+print_section("Training")
+
+train(model, train_loader, optimizer, loss_func, epochs, device)
+
+print_section("Testing")
