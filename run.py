@@ -167,12 +167,19 @@ if __name__ == "__main__":
     fc_hidden_size = 1
     number_classes = 1
     fc_dropout_rate = 1
+    num_layers = 1
+    epsilon = 1e-8
+    kernel_size = 1
+    stride = 1
+    padding = 1
+    dropout_rate = 0.3
+    
+    set_component_vars(epsilon, kernel_size, stride, padding, dropout_rate)
 
     if model_id == 1:
         model = model_1(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
@@ -185,7 +192,6 @@ if __name__ == "__main__":
         model = model_2(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
@@ -198,7 +204,6 @@ if __name__ == "__main__":
         model = model_3(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
@@ -211,33 +216,32 @@ if __name__ == "__main__":
         model = model_4(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
+            num_layers,
         )
 
     elif model_id == 5:
         model = model_5(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
+            num_layers,
         )
 
     elif model_id == 6:
         model = baseline_model_1(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
@@ -250,7 +254,6 @@ if __name__ == "__main__":
         model = baseline_model_2(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
@@ -263,7 +266,6 @@ if __name__ == "__main__":
         model = baseline_model_3(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
@@ -276,26 +278,26 @@ if __name__ == "__main__":
         model = baseline_model_4(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
+            num_layers,
         )
 
     elif model_id == 10:
         model = baseline_model_5(
             in_channels,
             out_channels,
-            kernel_size,
             image_height,
             image_width,
             fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
+            num_layers,
         )
 
     else:

@@ -4,6 +4,19 @@ import torch.nn.functional as F
 import math
 
 epsilon = 1e-8
+kernel_size = 1
+stride = 1
+padding = 1
+dropout_rate = 0.3
+
+
+def set_component_vars(eps, k_size, strd, pad, drop):
+    global epsilon, kernel_size, stride, padding, dropout_rate
+    epsilon = eps
+    kernel_size = k_size
+    stride = strd
+    padding = pad
+    dropout_rate = drop
 
 
 class MLP(nn.Module):
@@ -29,12 +42,12 @@ class MLP(nn.Module):
 
 class StandardConv2D(nn.Module):
     def __init__(
-        self, in_channels, out_channels, kernel_size, stride, padding, dropout_rate
+        self, in_channels, out_channels
     ):
         super().__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding)
         self.bn = nn.BatchNorm2d(out_channels)
-        self.activation_func = (nn.ReLU(),)
+        self.activation_func = nn.ReLU()
         self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, x):
@@ -46,7 +59,7 @@ class StandardConv2D(nn.Module):
 
 
 class ProductUnits(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
+    def __init__(self, in_channels, out_channels):
         super(ProductUnits, self).__init__()
         self.weights_u = nn.Parameter(
             torch.Tensor(out_channels, in_channels, kernel_size, kernel_size)
@@ -111,7 +124,7 @@ class ProductUnits(nn.Module):
 
 class ConcatConv2DProductUnits(nn.Module):
     def __init__(
-        self, in_channels=3, num_layers=2, initial_out_channels=16, kernel_size=3
+        self, in_channels, num_layers, initial_out_channels=16, kernel_size=3
     ):
         super(ConcatConv2DProductUnits, self).__init__()
         self.kernel_size = kernel_size
@@ -128,7 +141,7 @@ class ConcatConv2DProductUnits(nn.Module):
                 nn.ModuleList(
                     [
                         ProductUnits(
-                            in_channels_, out_channels_, kernel_size=kernel_size
+                            in_channels_, out_channels_
                         ),
                         nn.Conv2d(
                             in_channels_,

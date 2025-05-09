@@ -6,7 +6,6 @@ class baseline_model_1(nn.Module):
         self,
         in_channels,
         out_channels,
-        kernel_size,
         image_height,
         image_width,
         fc_input_size,
@@ -17,7 +16,7 @@ class baseline_model_1(nn.Module):
         super(baseline_model_1, self).__init__()
 
         self.conv_layers = StandardConv2D(
-            in_channels, out_channels, kernel_size=kernel_size
+            in_channels, out_channels
         )
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
@@ -44,7 +43,6 @@ class baseline_model_2(nn.Module):
         self,
         in_channels,
         out_channels,
-        kernel_size,
         image_height,
         image_width,
         fc_input_size,
@@ -55,11 +53,11 @@ class baseline_model_2(nn.Module):
         super(baseline_model_1, self).__init__()
 
         self.conv_layers1 = StandardConv2D(
-            in_channels, out_channels, kernel_size=kernel_size
+            in_channels, out_channels
         )
 
         self.conv_layers2 = StandardConv2D(
-            out_channels, out_channels, kernel_size=kernel_size
+            out_channels, out_channels
         )
 
         with torch.no_grad():
@@ -88,7 +86,6 @@ class baseline_model_3(nn.Module):
         self,
         in_channels,
         out_channels,
-        kernel_size,
         image_height,
         image_width,
         fc_input_size,
@@ -99,11 +96,11 @@ class baseline_model_3(nn.Module):
         super(baseline_model_4, self).__init__()
 
         self.pi_conv_layers1 = ProductUnits(
-            in_channels, out_channels, kernel_size=kernel_size
+            in_channels, out_channels
         )
 
         self.conv_layers2 = StandardConv2D(
-            out_channels, out_channels, kernel_size=kernel_size
+            out_channels, out_channels
         )
 
         with torch.no_grad():
@@ -132,7 +129,6 @@ class baseline_model_4(nn.Module):
         self,
         in_channels,
         out_channels,
-        kernel_size,
         image_height,
         image_width,
         fc_input_size,
@@ -146,11 +142,11 @@ class baseline_model_4(nn.Module):
         self.num_layers = num_layers
 
         self.concat_conv_ = StandardConv2D(
-            in_channels, out_channels, kernel_size=kernel_size
+            in_channels, out_channels
         )
 
         self.conv_layers = StandardConv2D(
-            out_channels, out_channels, kernel_size=kernel_size
+            out_channels, out_channels
         )
 
         with torch.no_grad():
@@ -179,7 +175,6 @@ class baseline_model_5(nn.Module):
         self,
         in_channels,
         out_channels,
-        kernel_size,
         image_height,
         image_width,
         fc_input_size,
@@ -193,7 +188,7 @@ class baseline_model_5(nn.Module):
         self.num_layers = num_layers
 
         self.concat_conv_ = StandardConv2D(
-            in_channels, out_channels, kernel_size=kernel_size
+            in_channels, out_channels
         )
 
         with torch.no_grad():
