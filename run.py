@@ -5,6 +5,7 @@ import os
 import torch
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+from torch import optim
 
 from utils import *
 from models import *
@@ -57,6 +58,8 @@ if __name__ == "__main__":
     epsilon = training["epsilon"]
     grad_epsilon = training["grad_epsilon"]
     clip_factor = training["clip_factor"]
+    # optimizer = training["optimizer"]
+    # loss_func = training["loss_func"]
 
     print_section("Configuration")
 
@@ -75,6 +78,9 @@ if __name__ == "__main__":
     print(f"Epsilon: {epsilon}")
     print(f"Gradient Epsilon: {grad_epsilon}")
     print(f"Clip Factor: {clip_factor}")
+    # print(f"optimizer: {optimizer}")
+    # print(f"loss_func: {loss_func}")
+   
 
     device = "cpu"
     if gpu:
@@ -174,6 +180,10 @@ if __name__ == "__main__":
     stride = 1
     padding = 1
     dropout_rate = 0.3
+    learning_rate = 0.004
+    optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+    loss_func = nn.CrossEntropyLoss
+    
     
     set_component_vars(epsilon, kernel_size, stride, padding, dropout_rate)
 
@@ -311,4 +321,4 @@ print_section("Training")
 
 train(model, train_loader, optimizer, loss_func, epochs, device)
 
-print_section("Testing")
+# print_section("Testing")
