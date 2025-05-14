@@ -8,7 +8,7 @@ class baseline_model_1(nn.Module):
         out_channels,
         image_height,
         image_width,
-        fc_input_size,
+        # fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,

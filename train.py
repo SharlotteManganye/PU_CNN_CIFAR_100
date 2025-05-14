@@ -18,11 +18,12 @@ def train(model, train_loader, optimizer, loss_func, epochs, device):
     train_loss = 0
     for epoch in range(epochs):
         train_acc = 0
-        for data, target in train_loader:
+        for i, (data, target) in enumerate(train_loader):  # Added enumerate
             data, target = data.to(device), target.to(device)
 
-            optimizer.zero_grad()
+            print(f"Batch {i}, Target values: {target[:10]}")  # ADDED: Print target values
             output = model(data.float())
+            print(f"Batch {i}, Output shape: {output.shape}")  # ADDED: Print output shape
 
             loss = loss_func(output, target)
             loss.backward()
@@ -38,7 +39,7 @@ def train(model, train_loader, optimizer, loss_func, epochs, device):
 
         avg_train_loss = train_loss / len(train_loader)
         avg_train_acc = 100. * train_acc / len(train_loader.dataset)
-        print (f'epoch: {epoch+1}, train_acc: {avg_train_acc}')
+        print(f'epoch: {epoch+1}, train_acc: {avg_train_acc}')
 
     return avg_train_loss, avg_train_acc
 

@@ -153,6 +153,8 @@ if __name__ == "__main__":
 
     image_shape = train_dataset[0][0].shape
 
+    print(train_dataset[0][0].shape)
+
     dataset_summery(train_dataset, test_dataset)
 
     train_loader, val_loader = get_train_val_loaders(
@@ -163,26 +165,26 @@ if __name__ == "__main__":
 
     print_section("Model")
 
-    model
+    # model
 
-    in_channels = 1
-    out_channels = 1
-    kernel_size = 1
-    image_height = 1
-    image_width = 1
+    in_channels =  train_dataset[0][0].shape[0]
+    out_channels = 10
+    kernel_size = 3
+    image_height = train_dataset[0][0].shape[1]
+    image_width = train_dataset[0][0].shape[2]
     fc_input_size = 1
     fc_hidden_size = 1
     number_classes = 1
-    fc_dropout_rate = 1
+    fc_dropout_rate = 0.3
     num_layers = 1
     epsilon = 1e-8
-    kernel_size = 1
+    kernel_size = 3
     stride = 1
     padding = 1
     dropout_rate = 0.3
     learning_rate = 0.004
-    optimizer = optim.Adam(model.parameters(),lr=learning_rate)
-    loss_func = nn.CrossEntropyLoss
+    loss_func = nn.CrossEntropyLoss()
+
     
     
     set_component_vars(epsilon, kernel_size, stride, padding, dropout_rate)
@@ -193,11 +195,12 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
+            # fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 2:
         model = model_2(
@@ -210,6 +213,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 3:
         model = model_3(
@@ -222,6 +226,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 4:
         model = model_4(
@@ -235,6 +240,7 @@ if __name__ == "__main__":
             fc_dropout_rate,
             num_layers,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 5:
         model = model_5(
@@ -248,6 +254,7 @@ if __name__ == "__main__":
             fc_dropout_rate,
             num_layers,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 6:
         model = baseline_model_1(
@@ -260,6 +267,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 7:
         model = baseline_model_2(
@@ -272,6 +280,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 8:
         model = baseline_model_3(
@@ -284,6 +293,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 9:
         model = baseline_model_4(
@@ -297,6 +307,7 @@ if __name__ == "__main__":
             fc_dropout_rate,
             num_layers,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 10:
         model = baseline_model_5(
@@ -310,6 +321,7 @@ if __name__ == "__main__":
             fc_dropout_rate,
             num_layers,
         )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     else:
         print("Please input a valid model ID")
