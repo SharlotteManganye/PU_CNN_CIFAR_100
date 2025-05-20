@@ -1,6 +1,6 @@
 import torch
 
-def adaptive_clip_grad_norm(parameters, clip_factor, eps):
+def adaptive_clip_grad_norm(parameters, clip_factor=0.01, eps=1e-3):
     if not isinstance(parameters, torch.Tensor):
         parameters = list(filter(lambda p: p.grad is not None, parameters))
     if not parameters:
@@ -20,11 +20,7 @@ def train(model, train_loader, optimizer, loss_func, epochs, device):
         train_acc = 0
         for i, (data, target) in enumerate(train_loader):  # Added enumerate
             data, target = data.to(device), target.to(device)
-
-            print(f"Batch {i}, Target values: {target[:10]}")  # ADDED: Print target values
             output = model(data.float())
-            print(f"Batch {i}, Output shape: {output.shape}")  # ADDED: Print output shape
-
             loss = loss_func(output, target)
             loss.backward()
 
@@ -39,7 +35,8 @@ def train(model, train_loader, optimizer, loss_func, epochs, device):
 
         avg_train_loss = train_loss / len(train_loader)
         avg_train_acc = 100. * train_acc / len(train_loader.dataset)
-        print(f'epoch: {epoch+1}, train_acc: {avg_train_acc}')
+        print(f'epoch: {epoch+1},Train Loss: {avg_train_loss}, Train Accuracy: {avg_train_acc}%')
+
 
     return avg_train_loss, avg_train_acc
 
@@ -60,5 +57,5 @@ def val(model, val_loader, loss_func, device):
 
     avg_val_loss = val_loss / len(val_loader)
     avg_val_acc = 100. * val_acc / len(val_loader.dataset)
-
+    # print('\tVal loss: {:.4f}, acc: {:.4f}%'.format(val_loss, val_acc))
     return avg_val_loss, avg_val_acc

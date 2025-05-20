@@ -16,12 +16,14 @@ class model_1(nn.Module):
         super(model_1, self).__init__()
 
         self.pi_conv_layers = ProductUnits(in_channels, out_channels)
+        
 
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
             output_shape = self.pi_conv_layers(dummy_input).shape
 
         fc_input_size = out_channels * output_shape[2] * output_shape[3]
+        self.bn_prod = nn.BatchNorm2d(out_channels)
 
         self.mlp = MLP(
             fc_input_size=fc_input_size,
@@ -32,9 +34,10 @@ class model_1(nn.Module):
 
     def forward(self, x):
       x = self.pi_conv_layers(x)
-      print(f"Shape after pi_conv_layers: {x.shape}")
+      x = self.bn_prod(x)
+      x = F.tanh(x)
+      # x = torch.log(torch.clamp(x, min=1e-6))
       x = x.reshape(x.size(0), -1)
-      print(f"Shape after reshape: {x.shape}")
       x = self.mlp(x)
       return x
 
@@ -46,7 +49,7 @@ class model_2(nn.Module):
         out_channels,
         image_height,
         image_width,
-        fc_input_size,
+        # fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
@@ -66,7 +69,8 @@ class model_2(nn.Module):
             output_shape = self.pi_conv_layers2(self.pi_conv_layers1(dummy_input)).shape
 
         fc_input_size = out_channels * output_shape[2] * output_shape[3]
-
+        self.bn_prod = nn.BatchNorm2d(out_channels)
+        
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -76,7 +80,11 @@ class model_2(nn.Module):
 
     def forward(self, x):
         x = self.pi_conv_layers1(x)
+        x = self.bn_prod(x)
+        x = F.tanh(x)
         x = self.pi_conv_layers2(x)
+        x = self.bn_prod(x)
+        x = F.tanh(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
         return x
@@ -89,7 +97,7 @@ class model_3(nn.Module):
         out_channels,
         image_height,
         image_width,
-        fc_input_size,
+        # fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
@@ -109,6 +117,8 @@ class model_3(nn.Module):
             output_shape = self.pi_conv_layers2(self.conv_layers1(dummy_input)).shape
 
         fc_input_size = out_channels * output_shape[2] * output_shape[3]
+        self.bn_prod = nn.BatchNorm2d(out_channels)
+        
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -118,7 +128,11 @@ class model_3(nn.Module):
 
     def forward(self, x):
         x = self.conv_layers1(x)
+        x = self.bn_prod(x)
+        x = F.tanh(x)
         x = self.pi_conv_layers2(x)
+        x = self.bn_prod(x)
+        x = F.relu(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
         return x

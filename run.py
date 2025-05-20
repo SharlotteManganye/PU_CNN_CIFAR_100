@@ -11,6 +11,7 @@ from utils import *
 from models import *
 from baseline_models import *
 from train import *
+from test import *
 
 if __name__ == "__main__":
     # Accept config file as command parameter
@@ -172,12 +173,17 @@ if __name__ == "__main__":
     kernel_size = 3
     image_height = train_dataset[0][0].shape[1]
     image_width = train_dataset[0][0].shape[2]
-    fc_input_size = 1
+    
+    targets = [label for _, label in train_dataset]
+    num_classes = len(set(targets))
+
+    # fc_input_size = 1
     fc_hidden_size = 1
-    number_classes = 1
     fc_dropout_rate = 0.3
     num_layers = 1
     epsilon = 1e-8
+    eps = 1e-3
+    clip_factor = 0.1
     kernel_size = 3
     stride = 1
     padding = 1
@@ -208,7 +214,7 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
+            # fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -221,7 +227,7 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
+            # fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -333,4 +339,7 @@ print_section("Training")
 
 train(model, train_loader, optimizer, loss_func, epochs, device)
 
-# print_section("Testing")
+
+print_section("Testing")
+
+test(model, test_loader, loss_func, device)

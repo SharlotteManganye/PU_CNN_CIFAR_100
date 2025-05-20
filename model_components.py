@@ -37,13 +37,12 @@ class MLP(nn.Module):
 
     def forward(self, x):
         x = x.view(x.size(0), -1)
-        x_fc = self.fc_model(x)
-        output = F.log_softmax(x_fc, dim=1)
+        # x_fc = self.fc_model(x)
         #   if return_feature_maps:
         #     return output, y_conv, z_conv, conv2_out #return feature maps
         # else:
         #     return output
-        return output
+        return self.fc_model(x)
 
 
 class StandardConv2D(nn.Module):
