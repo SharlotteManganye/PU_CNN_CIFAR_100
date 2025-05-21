@@ -7,10 +7,6 @@ venv/
 env/
 ENV/
 
-# Ignore all files in the configs directory
-configs/*
-!configs/.gitkeep
-
 # Ignore all files in the data directory and its subdirectories
 data/*
 !data/.gitkeep
