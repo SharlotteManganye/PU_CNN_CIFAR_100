@@ -107,3 +107,19 @@ def get_test_loader(test_dataset, batch_size, num_workers):
         pin_memory=True,
     )
     return test_loader
+
+
+def create_run():
+    # Create the run folder
+    # Save yaml parameters
+    print()
+
+
+def training_results():
+    # Append a row to a trining results .csv file
+    print()
+
+
+def test_results():
+    # save final accuracy to separte test .csv file
+    print()

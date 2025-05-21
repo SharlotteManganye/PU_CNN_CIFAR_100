@@ -36,6 +36,10 @@ def train(model, train_loader, optimizer, loss_func, epochs, device):
         avg_train_loss = train_loss / len(train_loader)
         avg_train_acc = 100. * train_acc / len(train_loader.dataset)
         print(f'epoch: {epoch+1},Train Loss: {avg_train_loss}, Train Accuracy: {avg_train_acc}%')
+        
+        # valdiate
+        
+        # after training and validation save epoch results by calling func in utils
 
 
     return avg_train_loss, avg_train_acc
