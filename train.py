@@ -90,7 +90,6 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, val_loader=
 
         avg_train_loss = train_loss / len(train_loader.dataset) # Correct average
         avg_train_acc = 100. * train_acc / len(train_loader.dataset)
-
         # --- Validation ---
         avg_val_loss = 0.0
         avg_val_acc = 0.0

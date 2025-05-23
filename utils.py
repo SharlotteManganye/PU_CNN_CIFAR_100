@@ -112,13 +112,6 @@ def get_test_loader(test_dataset, batch_size, num_workers):
     )
     return test_loader
 
-
-def create_run():
-    # Create the run folder
-    # Save yaml parameters
-    print()
-
-
 def save_model_checkpoint(model, epoch, params_dir):
 
     if not os.path.exists(params_dir):
