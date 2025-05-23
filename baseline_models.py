@@ -62,7 +62,7 @@ class baseline_model_2(nn.Module):
         )
 
         self.conv_layers2 = StandardConv2D(
-            out_channels, out_channels
+            in_channels, out_channels*2
         )
 
         with torch.no_grad():
@@ -109,7 +109,7 @@ class baseline_model_3(nn.Module):
         )
 
         self.conv_layers2 = StandardConv2D(
-            out_channels, out_channels
+            in_channels, out_channels*2
         )
 
         with torch.no_grad():
