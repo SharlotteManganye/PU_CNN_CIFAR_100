@@ -1,4 +1,5 @@
 from model_components import *
+import torch.nn.functional as F
 
 
 class model_1(nn.Module):
@@ -35,11 +36,11 @@ class model_1(nn.Module):
     def forward(self, x):
       x = self.pi_conv_layers(x)
       x = self.bn_prod(x)
-      x = F.tanh(x)
+      x = F.relu(x)
       # x = torch.log(torch.clamp(x, min=1e-6))
       x = x.reshape(x.size(0), -1)
       x = self.mlp(x)
-      return x
+      return F.log_softmax(x, dim=1)
 
 
 class model_2(nn.Module):
@@ -61,7 +62,7 @@ class model_2(nn.Module):
         )
 
         self.pi_conv_layers2 = ProductUnits(
-            out_channels, out_channels
+            in_channels, out_channels*2
         )
 
         with torch.no_grad():
@@ -81,13 +82,13 @@ class model_2(nn.Module):
     def forward(self, x):
         x = self.pi_conv_layers1(x)
         x = self.bn_prod(x)
-        x = F.tanh(x)
+        x = F.relu(x)
         x = self.pi_conv_layers2(x)
         x = self.bn_prod(x)
-        x = F.tanh(x)
+        x = F.relu(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
-        return x
+        return F.log_softmax(x, dim=1)
 
 
 class model_3(nn.Module):
@@ -109,7 +110,7 @@ class model_3(nn.Module):
         )
 
         self.pi_conv_layers2 = ProductUnits(
-            out_channels, out_channels
+            in_channels, out_channels*2
         )
 
         with torch.no_grad():
@@ -129,13 +130,13 @@ class model_3(nn.Module):
     def forward(self, x):
         x = self.conv_layers1(x)
         x = self.bn_prod(x)
-        x = F.tanh(x)
+        x = F.relu(x)
         x = self.pi_conv_layers2(x)
         x = self.bn_prod(x)
         x = F.relu(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
-        return x
+        return F.log_softmax(x, dim=1)
 
 class model_4(nn.Module):
     def __init__(
@@ -183,7 +184,7 @@ class model_4(nn.Module):
         x = self.conv_layers(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
-        return x
+        return F.log_softmax(x, dim=1)
 
 
 class model_5(nn.Module):
@@ -225,4 +226,4 @@ class model_5(nn.Module):
         x = self.concat_conv_product(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
-        return x
+        return F.log_softmax(x, dim=1)

@@ -169,7 +169,7 @@ if __name__ == "__main__":
     # model
 
     in_channels =  train_dataset[0][0].shape[0]
-    out_channels = 10
+    out_channels = 32
     kernel_size = 3
     image_height = train_dataset[0][0].shape[1]
     image_width = train_dataset[0][0].shape[2]
@@ -177,7 +177,6 @@ if __name__ == "__main__":
     targets = [label for _, label in train_dataset]
     num_classes = len(set(targets))
 
-    # fc_input_size = 1
     fc_hidden_size = 1
     fc_dropout_rate = 0.3
     num_layers = 1
@@ -201,7 +200,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            # fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -214,7 +212,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            # fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -227,7 +224,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            # fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -240,7 +236,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -254,7 +249,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -268,7 +262,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -281,7 +274,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -294,7 +286,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -307,7 +298,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -321,7 +311,6 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
-            fc_input_size,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,
@@ -337,9 +326,15 @@ print(model)
 
 print_section("Training")
 
-train(model, train_loader, optimizer, loss_func, epochs, device)
+train(model, train_loader, optimizer, loss_func, epochs, device,val_loader=val_loader)
 
 
 print_section("Testing")
 
 test(model, test_loader, loss_func, device)
+
+print_section("Cross Validition")
+
+cross_validate(model, dataset, num_folds, batch_size, epochs, learning_rate, device, seed)
+
+

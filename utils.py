@@ -2,6 +2,10 @@ import yaml
 import torch
 from torch.utils.data import DataLoader, random_split
 from collections import Counter
+import os
+import pandas as pd
+from datetime import datetime
+import pytz
 
 
 def load_config(config_path):
@@ -107,3 +111,64 @@ def get_test_loader(test_dataset, batch_size, num_workers):
         pin_memory=True,
     )
     return test_loader
+
+
+def create_run():
+    # Create the run folder
+    # Save yaml parameters
+    print()
+
+
+def save_model_checkpoint(model, epoch, params_dir):
+
+    if not os.path.exists(params_dir):
+        os.makedirs(params_dir)
+    checkpoint_filename = os.path.join(params_dir, f'model_epoch_{epoch}.pth')
+    torch.save(model.state_dict(), checkpoint_filename)
+    return checkpoint_filename
+
+
+def training_results(all_epoch_metrics, model, current_time_str, base_results_dir='results', params_subdir='model_parameters'):
+
+
+    # Create a unique timestamped folder for this training run's results
+    run_results_dir = os.path.join(base_results_dir, f'run_{current_time_str}')
+    os.makedirs(run_results_dir, exist_ok=True)
+    
+    # Create directory for saving parameters within the run-specific results directory
+    params_dir = os.path.join(run_results_dir, params_subdir)
+    os.makedirs(params_dir, exist_ok=True)
+
+    # Now, iterate through the collected metrics and add checkpoint paths
+    final_epoch_data = []
+    for epoch_metric in all_epoch_metrics:
+        epoch = epoch_metric['Epoch']
+        # Save model checkpoint and get its path
+        checkpoint_path = save_model_checkpoint(model, epoch, params_dir)
+        epoch_metric['Checkpoint_Path'] = checkpoint_path # Add checkpoint path to the metrics
+        final_epoch_data.append(epoch_metric)
+
+    # Save all collected data (including checkpoint paths) to a CSV file
+    metrics_csv_filename = os.path.join(run_results_dir, f'training_metrics_{current_time_str}.csv')
+    df = pd.DataFrame(final_epoch_data)
+    df.to_csv(metrics_csv_filename, index=False)
+    
+    print(f"Training metrics (including batch size and LR) saved to {metrics_csv_filename}")
+    print(f"Model checkpoints saved to {params_dir}")
+
+
+
+def test_results(test_loss, test_accuracy, base_results_dir='results'):
+    sa_timezone = pytz.timezone('Africa/Johannesburg') 
+    current_time_sast = datetime.now(sa_timezone)
+    current_time_str = current_time_sast.strftime("%Y%m%d_%H%M%S")
+    os.makedirs(base_results_dir, exist_ok=True)
+    test_metrics_filename = os.path.join(base_results_dir, f'test_metrics_{current_time_str}.csv')
+    test_data = {
+        'Timestamp': current_time_str,
+        'Test_Loss': test_loss,
+        'Test_Accuracy': test_accuracy
+    }
+    df = pd.DataFrame([test_data]) 
+    df.to_csv(test_metrics_filename, index=False) 
+    print(f"Test results saved to {test_metrics_filename}")

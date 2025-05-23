@@ -1,0 +1,11 @@
+Epoch,Train_Loss,Train_Accuracy,Val_Loss,Val_Accuracy,Parameters_Path
+1,2.1106943737665813,17.34375,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_1.pth
+2,1.9785354356765747,20.439583333333335,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_2.pth
+3,1.9621295274098713,22.102083333333333,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_3.pth
+4,1.9617388582229613,22.895833333333332,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_4.pth
+5,1.950379661242167,23.379166666666666,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_5.pth
+6,1.9459881639480592,23.195833333333333,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_6.pth
+7,1.9474574801127116,23.602083333333333,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_7.pth
+8,1.942112361907959,23.741666666666667,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_8.pth
+9,1.937572706858317,23.914583333333333,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_9.pth
+10,1.937098716100057,23.677083333333332,0.0,0.0,results/run_20250522_071752/model_parameters/model_epoch_10.pth
