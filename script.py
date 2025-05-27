@@ -17,10 +17,7 @@ if __name__ == "__main__":
     # Accept config file as command parameter
     parser = argparse.ArgumentParser(description="Load YAML configuration file.")
 
-    parser.add_argument("--config", 
-                        default="base_model_1.yaml", 
-                        type=str, 
-                        help="Path to the YAML config file")
+    parser.add_argument('--config_file', type=str, help='Path to the configuration file')
 
     args = parser.parse_args()
 

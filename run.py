@@ -335,6 +335,6 @@ test(model, test_loader, loss_func, device)
 
 print_section("Cross Validition")
 
-cross_validate(model, dataset, num_folds, batch_size, epochs, learning_rate, device, seed)
+# cross_validate(model, dataset, num_folds, batch_size, epochs, learning_rate, device, seed)
 
 
