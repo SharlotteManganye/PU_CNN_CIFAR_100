@@ -19,7 +19,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "config_file",
         nargs="?",
-        default="base_model_2.yaml",
+        default="model_2.yaml",
         type=str,
         help="Path to the YAML config file",
     )
