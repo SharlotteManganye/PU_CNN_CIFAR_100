@@ -13,7 +13,8 @@ source /etc/profile.d/modules.sh
 ulimit -s unlimited
 echo 'Run Starting'
 
-cd /home/lustre/smanganye/Convolutional-Neural-Networks
+cd /home/smanganye/lustre/Convolutional-Neural-Networks
+
 
 module load chpc/python/anaconda/3-2021.11
 source myenv/bin/activate
