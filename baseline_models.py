@@ -96,7 +96,7 @@ class baseline_model_2(nn.Module):
         x = self.mlp(x)
         return F.log_softmax(x, dim=1)
 
-class baseline_mmodel_3(nn.Module):
+class baseline_model_3(nn.Module):
     def __init__(
         self,
         in_channels,
@@ -108,7 +108,7 @@ class baseline_mmodel_3(nn.Module):
         number_classes,
         fc_dropout_rate,
     ):
-        super(baseline_mmodel_3, self).__init__()
+        super(baseline_model_3, self).__init__()
 
         self.conv_layers1 = StandardConv2D(
             in_channels, out_channels
