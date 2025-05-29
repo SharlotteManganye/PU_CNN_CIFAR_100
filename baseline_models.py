@@ -44,6 +44,7 @@ class baseline_model_1(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
+
 class baseline_model_2(nn.Module):
     def __init__(
         self,
@@ -51,6 +52,7 @@ class baseline_model_2(nn.Module):
         out_channels,
         image_height,
         image_width,
+        # fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
@@ -62,16 +64,20 @@ class baseline_model_2(nn.Module):
         )
 
         self.conv_layers2 = StandardConv2D(
-            in_channels, out_channels*2
+            out_channels, out_channels*2
         )
 
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
             output_shape = self.conv_layers2(self.conv_layers1(dummy_input)).shape
 
-        fc_input_size = out_channels * output_shape[2] * output_shape[3]
-        self.bn_conv = nn.BatchNorm2d(out_channels)
 
+        
+        fc_input_size = (out_channels * 2) * output_shape[2] * output_shape[3]
+
+        self.bn_conv1 = nn.BatchNorm2d(out_channels)
+        self.bn_conv2 = nn.BatchNorm2d(out_channels*2)
+        
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -81,44 +87,46 @@ class baseline_model_2(nn.Module):
 
     def forward(self, x):
         x = self.conv_layers1(x)
-        x = self.bn_conv(x)
+        x = self.bn_conv1(x)
         x = F.relu(x)
         x = self.conv_layers2(x)
-        x = self.bn_conv(x)
+        x = self.bn_conv2(x)
         x = F.relu(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
-        return x
+        return F.log_softmax(x, dim=1)
 
-
-class baseline_model_3(nn.Module):
+class baseline_mmodel_3(nn.Module):
     def __init__(
         self,
         in_channels,
         out_channels,
         image_height,
         image_width,
+        # fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
     ):
-        super(baseline_model_3, self).__init__()
+        super(baseline_mmodel_3, self).__init__()
 
         self.conv_layers1 = StandardConv2D(
-            out_channels, out_channels
+            in_channels, out_channels
         )
 
-        self.conv_layers2 = StandardConv2D(
-            in_channels, out_channels*2
-        )
+        
+        self.conv_layers2 = StandardConv2D(out_channels, out_channels * 2)
+
 
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
-            output_shape = self.conv_layers2(self.pi_conv_layers1(dummy_input)).shape
+            output_shape = self.conv_layers2(self.conv_layers1(dummy_input)).shape
 
-        fc_input_size = out_channels * output_shape[2] * output_shape[3]
-        self.bn_conv = nn.BatchNorm2d(out_channels)
+        fc_input_size = (out_channels * 2) * output_shape[2] * output_shape[3]
 
+        self.bn_conv1 = nn.BatchNorm2d(out_channels)
+        self.bn_conv2 = nn.BatchNorm2d(out_channels*2)
+        
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -128,13 +136,14 @@ class baseline_model_3(nn.Module):
 
     def forward(self, x):
         x = self.conv_layers1(x)
-        x = self.bn_conv(x)
+        x = self.bn_conv1(x)
         x = F.relu(x)
         x = self.conv_layers2(x)
+        x = self.bn_conv2(x)
+        x = F.relu(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
-        return x
-
+        return F.log_softmax(x, dim=1)
 
 class baseline_model_4(nn.Module):
     def __init__(

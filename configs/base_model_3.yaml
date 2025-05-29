@@ -11,7 +11,7 @@ data:
 model:
   model_id: 3
   number_channels: 1
-  out_channels: 32 
+  out_channels: 32
   number_classes: 10
 
 training:
@@ -21,3 +21,4 @@ training:
   epsilon: 1e-8
   grad_epsilon: 1e-3
   clip_factor: 0.1
+
