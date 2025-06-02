@@ -122,9 +122,14 @@ def save_model_checkpoint(model, epoch, params_dir):
     return checkpoint_filename
 
 
-def training_results(all_epoch_metrics, model, current_time_str, base_results_dir='results', params_subdir='model_parameters'):
+def training_results(all_epoch_metrics, model, current_time_str, config_filename, base_results_dir='results', params_subdir='model_parameters'):
+    import os
+    import pandas as pd
+
+    yaml_base = os.path.splitext(os.path.basename(config_filename))[0]
     run_results_dir = os.path.join(base_results_dir, f'run_{current_time_str}')
     os.makedirs(run_results_dir, exist_ok=True)
+
     params_dir = os.path.join(run_results_dir, params_subdir)
     os.makedirs(params_dir, exist_ok=True)
 
@@ -139,12 +144,14 @@ def training_results(all_epoch_metrics, model, current_time_str, base_results_di
             epoch_metric['Checkpoint_Path'] = None
         final_epoch_data.append(epoch_metric)
 
-    metrics_csv_filename = os.path.join(run_results_dir, f'training_metrics_{current_time_str}.csv')
+    # Updated filename format
+    metrics_csv_filename = os.path.join(run_results_dir, f'train_{yaml_base}_{current_time_str}.csv')
     df = pd.DataFrame(final_epoch_data)
     df.to_csv(metrics_csv_filename, index=False)
 
     print(f"Training metrics saved to {metrics_csv_filename}")
     print(f"Final model checkpoint saved to {params_dir}")
+
 
 
 
