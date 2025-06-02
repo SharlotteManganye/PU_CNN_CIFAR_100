@@ -9,7 +9,6 @@ class model_1(nn.Module):
         out_channels,
         image_height,
         image_width,
-        # fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
@@ -71,9 +70,6 @@ class model_2(nn.Module):
 
         
         fc_input_size = (out_channels * 2) * output_shape[2] * output_shape[3]
-
-        self.bn_prod1 = nn.BatchNorm2d(out_channels)
-        self.bn_prod2 = nn.BatchNorm2d(out_channels*2)
         
         self.mlp = MLP(
             fc_input_size=fc_input_size,
@@ -84,11 +80,7 @@ class model_2(nn.Module):
 
     def forward(self, x):
         x = self.pi_conv_layers1(x)
-        x = self.bn_prod1(x)
-        x = F.relu(x)
         x = self.pi_conv_layers2(x)
-        x = self.bn_prod2(x)
-        x = F.relu(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
         return F.log_softmax(x, dim=1)
@@ -101,7 +93,6 @@ class model_3(nn.Module):
         out_channels,
         image_height,
         image_width,
-        # fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
@@ -121,9 +112,6 @@ class model_3(nn.Module):
             output_shape = self.pi_conv_layers2(self.conv_layers1(dummy_input)).shape
 
         fc_input_size = (out_channels * 2) * output_shape[2] * output_shape[3]
-
-        self.bn_conv = nn.BatchNorm2d(out_channels)
-        self.bn_prod = nn.BatchNorm2d(out_channels*2)
         
         self.mlp = MLP(
             fc_input_size=fc_input_size,
@@ -134,11 +122,7 @@ class model_3(nn.Module):
 
     def forward(self, x):
         x = self.conv_layers1(x)
-        x = self.bn_conv(x)
-        x = F.relu(x)
         x = self.pi_conv_layers2(x)
-        x = self.bn_prod(x)
-        x = F.relu(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
         return F.log_softmax(x, dim=1)
@@ -174,9 +158,6 @@ class model_4(nn.Module):
 
         fc_input_size = output_shape[1] * output_shape[2] * output_shape[3]
 
-        self.bn_conv = nn.BatchNorm2d(output_shape[1])
-
-
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -186,8 +167,6 @@ class model_4(nn.Module):
 
     def forward(self, x):
         x = self.concat_conv_product(x)
-        x = self.bn_conv(x)
-        x = F.relu(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
         return F.log_softmax(x, dim=1)
@@ -210,9 +189,9 @@ class model_5(nn.Module):
         self.num_layers = num_layers
 
         self.concat_conv_product = ConcatConv2DProductUnits(
-            in_channels=in_channels,
-            num_layers=num_layers,
-            initial_out_channels=out_channels,
+          in_channels=in_channels,
+          num_layers=num_layers, 
+          initial_out_channels=out_channels,
         )
 
         with torch.no_grad():
@@ -220,6 +199,7 @@ class model_5(nn.Module):
             output_shape = self.concat_conv_product(dummy_input).shape
 
         fc_input_size = output_shape[1] * output_shape[2] * output_shape[3]
+
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,

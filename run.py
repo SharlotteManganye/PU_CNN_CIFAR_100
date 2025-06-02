@@ -52,6 +52,7 @@ if __name__ == "__main__":
     model_id = model["model_id"]
     number_channels = model["number_channels"]
     number_classes = model["number_classes"]
+    num_layers = model["num_layers"]
 
     # Training variables
     batch_size = training["batch_size"]
@@ -80,6 +81,7 @@ if __name__ == "__main__":
     print(f"Epsilon: {epsilon}")
     print(f"Gradient Epsilon: {grad_epsilon}")
     print(f"Clip Factor: {clip_factor}")
+    print(f"Number of Layers: {num_layers}")
     # print(f"optimizer: {optimizer}")
     # print(f"loss_func: {loss_func}")
    
@@ -180,7 +182,7 @@ if __name__ == "__main__":
 
     fc_hidden_size = 1
     fc_dropout_rate = 0.3
-    num_layers = 1
+    num_layers = 4
     epsilon = 1e-8
     eps = 1e-3
     clip_factor = 0.1

@@ -8,6 +8,7 @@ kernel_size = 1
 stride = 1
 padding = 1
 dropout_rate = 0.3
+num_layers = 1
 
 
 def set_component_vars(eps, k_size, strd, pad, drop):
