@@ -172,7 +172,8 @@ class model_4(nn.Module):
           output_shape = x.shape  # <- fixed line
 
 
-        fc_input_size = out_channels * output_shape[2] * output_shape[3]
+        fc_input_size = output_shape[1] * output_shape[2] * output_shape[3]
+
         self.bn_conv = nn.BatchNorm2d(output_shape[1])
 
 
@@ -199,7 +200,6 @@ class model_5(nn.Module):
         out_channels,
         image_height,
         image_width,
-        fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,

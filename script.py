@@ -20,6 +20,7 @@ if __name__ == "__main__":
     parser.add_argument('--config_file', type=str, help='Path to the configuration file')
 
     args = parser.parse_args()
+    config_filename = args.config_file
 
     base_path = os.getcwd()
 
@@ -322,12 +323,12 @@ print(model)
 
 print_section("Training")
 
-train(model, train_loader, optimizer, loss_func, epochs, device,val_loader=val_loader)
+train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir='results', params_subdir='model_parameters')
 
 
 print_section("Testing")
 
-test(model, test_loader, loss_func, device)
+test(model, test_loader, loss_func, device, config_filename)
 
 print_section("Cross Validition")
 
