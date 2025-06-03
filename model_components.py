@@ -3,11 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-epsilon = 1e-8
+epsilon = 1e-10
 kernel_size = 1
 stride = 1
 padding = 1
-dropout_rate = 0.3
+dropout_rate = 0.25
 num_layers = 1
 
 
@@ -64,25 +64,80 @@ class StandardConv2D(nn.Module):
         return x
 
 
+# class ProductUnits(nn.Module):
+#     def __init__(self, in_channels, out_channels):
+#         super(ProductUnits, self).__init__()
+#         self.weights_u = nn.Parameter(
+#             torch.Tensor(out_channels, in_channels, kernel_size, kernel_size)
+#         )  # for positive inputs
+#         self.weights_v = nn.Parameter(
+#             torch.Tensor(out_channels, in_channels, kernel_size, kernel_size)
+#         )  # for indicator function
+#         self.stride = stride
+#         self.padding = padding  # Store the padding value
+#         # Initialize weights (important!)
+#         nn.init.kaiming_uniform_(self.weights_u, a=math.sqrt(5))
+#         nn.init.kaiming_uniform_(self.weights_v, a=math.sqrt(5))
+
+#     def forward(self, x):
+#         # Apply padding before unfolding
+#         x = F.pad(x, (self.padding, self.padding, self.padding, self.padding))
+
+#         batch_size, in_channels, in_height, in_width = x.size()
+#         kernel_size = self.weights_u.shape[2]
+#         out_channels = self.weights_u.shape[0]
+
+#         out_height = (in_height - kernel_size) // self.stride + 1
+#         out_width = (in_width - kernel_size) // self.stride + 1
+
+#         # Unfold the input tensor
+#         unfolded = F.unfold(x, kernel_size=kernel_size, stride=self.stride)
+#         unfolded = unfolded.view(
+#             batch_size, in_channels * kernel_size * kernel_size, out_height * out_width
+#         )
+
+#         # Weights for positive input component
+#         weights_u_reshaped = self.weights_u.view(out_channels, -1)
+
+#         # Logarithm of absolute value
+#         log_abs_unfolded = torch.log(
+#             torch.abs(unfolded) + epsilon
+#         )  # Add small constant for numerical stability
+
+#         # Compute the exponential part (corresponding to Eq. 3)
+#         exp_term = torch.exp(
+#             torch.einsum("oc,bcp->bop", weights_u_reshaped, log_abs_unfolded)
+#         )
+
+#         # Weights for indicator function
+#         weights_v_reshaped = self.weights_v.view(out_channels, -1)
+
+#         # Indicator function (vectorized)
+#         indicator = (unfolded < 0).float()
+
+#         # Compute the cosine term (corresponding to Eq. 4)
+#         cosine_term = torch.cos(
+#             math.pi * torch.einsum("oc,bcp->bop", weights_v_reshaped, indicator)
+#         ).view(batch_size, out_channels, out_height, out_width)
+
+#         # Combine the terms
+#         output = (
+#             exp_term.view(batch_size, out_channels, out_height, out_width) * cosine_term
+#         )
+
+#         return output
+
 class ProductUnits(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, stride=1):
         super(ProductUnits, self).__init__()
-        self.weights_u = nn.Parameter(
-            torch.Tensor(out_channels, in_channels, kernel_size, kernel_size)
-        )  # for positive inputs
-        self.weights_v = nn.Parameter(
-            torch.Tensor(out_channels, in_channels, kernel_size, kernel_size)
-        )  # for indicator function
+        self.weights_u = nn.Parameter(torch.Tensor(out_channels, in_channels, kernel_size, kernel_size)) # for positive inputs
+        self.weights_v = nn.Parameter(torch.Tensor(out_channels, in_channels, kernel_size, kernel_size)) # for indicator function
         self.stride = stride
-        self.padding = padding  # Store the padding value
         # Initialize weights (important!)
         nn.init.kaiming_uniform_(self.weights_u, a=math.sqrt(5))
         nn.init.kaiming_uniform_(self.weights_v, a=math.sqrt(5))
 
     def forward(self, x):
-        # Apply padding before unfolding
-        x = F.pad(x, (self.padding, self.padding, self.padding, self.padding))
-
         batch_size, in_channels, in_height, in_width = x.size()
         kernel_size = self.weights_u.shape[2]
         out_channels = self.weights_u.shape[0]
@@ -92,22 +147,16 @@ class ProductUnits(nn.Module):
 
         # Unfold the input tensor
         unfolded = F.unfold(x, kernel_size=kernel_size, stride=self.stride)
-        unfolded = unfolded.view(
-            batch_size, in_channels * kernel_size * kernel_size, out_height * out_width
-        )
+        unfolded = unfolded.view(batch_size, in_channels * kernel_size * kernel_size, out_height * out_width)
 
         # Weights for positive input component
         weights_u_reshaped = self.weights_u.view(out_channels, -1)
 
         # Logarithm of absolute value
-        log_abs_unfolded = torch.log(
-            torch.abs(unfolded) + epsilon
-        )  # Add small constant for numerical stability
+        log_abs_unfolded = torch.log(torch.abs(unfolded) + 1e-10)  # Add small constant for numerical stability
 
         # Compute the exponential part (corresponding to Eq. 3)
-        exp_term = torch.exp(
-            torch.einsum("oc,bcp->bop", weights_u_reshaped, log_abs_unfolded)
-        )
+        exp_term = torch.exp(torch.einsum("oc,bcp->bop", weights_u_reshaped, log_abs_unfolded))
 
         # Weights for indicator function
         weights_v_reshaped = self.weights_v.view(out_channels, -1)
@@ -116,16 +165,14 @@ class ProductUnits(nn.Module):
         indicator = (unfolded < 0).float()
 
         # Compute the cosine term (corresponding to Eq. 4)
-        cosine_term = torch.cos(
-            math.pi * torch.einsum("oc,bcp->bop", weights_v_reshaped, indicator)
-        ).view(batch_size, out_channels, out_height, out_width)
+        cosine_term = torch.cos(math.pi * torch.einsum("oc,bcp->bop", weights_v_reshaped, indicator)).view(batch_size, out_channels, out_height, out_width)
 
         # Combine the terms
-        output = (
-            exp_term.view(batch_size, out_channels, out_height, out_width) * cosine_term
-        )
+        output = exp_term.view(batch_size, out_channels, out_height, out_width) * cosine_term
 
         return output
+
+
 
 
 class ConcatConv2DProductUnits(nn.Module):
@@ -179,7 +226,7 @@ class ConcatConv2DProductUnits(nn.Module):
 
             y = product_conv(x)
             y = bn_prod(y)
-            y = F.tanh(y)
+            y = F.relu(y)
 
             z = conv(x)
             z = bn_conv(z)

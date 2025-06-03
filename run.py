@@ -180,15 +180,15 @@ if __name__ == "__main__":
     num_classes = len(set(targets))
 
     fc_hidden_size = 1
-    fc_dropout_rate = 0.3
-    epsilon = 1e-8
+    fc_dropout_rate = 0.25
+    epsilon = 1e-10
     eps = 1e-3
-    clip_factor = 0.1
+    clip_factor =  0.01
     kernel_size = 3
     stride = 1
     padding = 1
-    dropout_rate = 0.3
-    learning_rate = 0.004
+    dropout_rate = 0.25
+    learning_rate = 1e-3
     loss_func = nn.CrossEntropyLoss()
 
     
@@ -213,6 +213,7 @@ if __name__ == "__main__":
             out_channels,
             image_height,
             image_width,
+            dropout_rate,
             fc_hidden_size,
             number_classes,
             fc_dropout_rate,

@@ -36,6 +36,7 @@ class model_1(nn.Module):
       x = self.pi_conv_layers(x)
       x = self.bn_prod(x)
       x = F.relu(x)
+      x = F.max_pool2d(x, 2)
       # x = torch.log(torch.clamp(x, min=1e-6))
       x = x.reshape(x.size(0), -1)
       x = self.mlp(x)
@@ -49,7 +50,7 @@ class model_2(nn.Module):
         out_channels,
         image_height,
         image_width,
-        # fc_input_size,
+        dropout_rate,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
@@ -63,14 +64,25 @@ class model_2(nn.Module):
         self.pi_conv_layers2 = ProductUnits(
             out_channels, out_channels*2
         )
+        self.dropout = nn.Dropout2d(dropout_rate)
+
+
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.bn2 = nn.BatchNorm2d(out_channels * 2)
 
         with torch.no_grad():
-            dummy_input = torch.randn(1, in_channels, image_height, image_width)
-            output_shape = self.pi_conv_layers2(self.pi_conv_layers1(dummy_input)).shape
+          dummy_input = torch.randn(1, in_channels, image_height, image_width)
+          x = self.pi_conv_layers1(dummy_input)
+          x = self.bn1(x)
+          x = F.relu(x)
+          x = F.max_pool2d(x, 2)
+          x = self.pi_conv_layers2(x)
+          x = self.bn2(x)
+          x = F.relu(x)
+          x = F.max_pool2d(x, 2)
+          x = self.dropout(x) 
+          fc_input_size = x.view(1, -1).size(1) 
 
-        
-        fc_input_size = (out_channels * 2) * output_shape[2] * output_shape[3]
-        
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -79,11 +91,18 @@ class model_2(nn.Module):
         )
 
     def forward(self, x):
-        x = self.pi_conv_layers1(x)
-        x = self.pi_conv_layers2(x)
-        x = x.reshape(x.size(0), -1)
-        x = self.mlp(x)
-        return F.log_softmax(x, dim=1)
+      x = self.pi_conv_layers1(x)
+      x = self.bn1(x)
+      x = F.relu(x)
+      x = F.max_pool2d(x, 2)
+      x = self.pi_conv_layers2(x)
+      x = self.bn2(x)
+      x = F.relu(x)
+      x = F.max_pool2d(x, 2)
+      x = self.dropout(x) 
+      x = x.reshape(x.size(0), -1)
+      x = self.mlp(x)
+      return F.log_softmax(x, dim=1)
 
 
 class model_3(nn.Module):
@@ -105,14 +124,20 @@ class model_3(nn.Module):
 
         
         self.pi_conv_layers2 = ProductUnits(out_channels, out_channels * 2)
+        self.dropout = nn.Dropout2d(dropout_rate)
+        self.bn = nn.BatchNorm2d(out_channels*2)
 
 
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
-            output_shape = self.pi_conv_layers2(self.conv_layers1(dummy_input)).shape
-
-        fc_input_size = (out_channels * 2) * output_shape[2] * output_shape[3]
-        
+            x = self.conv_layers1(dummy_input)
+            x = self.pi_conv_layers2(x)
+            x = self.bn(x)
+            x = F.relu(x)
+            x = F.max_pool2d(x, 2)
+            x = self.dropout(x) 
+            fc_input_size = x.view(1, -1).size(1) 
+      
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -123,6 +148,10 @@ class model_3(nn.Module):
     def forward(self, x):
         x = self.conv_layers1(x)
         x = self.pi_conv_layers2(x)
+        x = self.bn(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout(x) 
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
         return F.log_softmax(x, dim=1)
