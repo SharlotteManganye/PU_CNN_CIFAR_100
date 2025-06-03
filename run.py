@@ -176,13 +176,11 @@ if __name__ == "__main__":
     kernel_size = 3
     image_height = train_dataset[0][0].shape[1]
     image_width = train_dataset[0][0].shape[2]
-    
     targets = [label for _, label in train_dataset]
     num_classes = len(set(targets))
 
     fc_hidden_size = 1
     fc_dropout_rate = 0.3
-    num_layers = 4
     epsilon = 1e-8
     eps = 1e-3
     clip_factor = 0.1

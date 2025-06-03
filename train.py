@@ -1,7 +1,7 @@
 import torch
 from datetime import datetime
-import pytz # For South African timezone
-from utils import training_results # Import the new saving function
+import pytz 
+from utils import training_results 
 from early_stopping import early_stopping as EarlyStoppingClass
 
 def val(model, val_loader, loss_func, device):

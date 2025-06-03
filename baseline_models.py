@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import torch
 
 
+
 class baseline_model_1(nn.Module):
     def __init__(
         self,
@@ -10,7 +11,6 @@ class baseline_model_1(nn.Module):
         out_channels,
         image_height,
         image_width,
-        # fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
@@ -137,11 +137,7 @@ class baseline_model_4(nn.Module):
         num_layers,
     ):
         super(baseline_model_4, self).__init__()
-
         self.num_layers = num_layers
-
-
-
         self.conv_layers = StandardConv2D(
             in_channels, out_channels*2
         )
@@ -150,8 +146,6 @@ class baseline_model_4(nn.Module):
           dummy_input = torch.randn(1, in_channels, image_height, image_width)
           output_shape = self.conv_layers(dummy_input).shape
           
-       
-
         fc_input_size = output_shape[1] * output_shape[2] * output_shape[3]
 
         self.mlp = MLP(
@@ -167,7 +161,6 @@ class baseline_model_4(nn.Module):
         x = self.mlp(x)
         return F.log_softmax(x, dim=1)
 
-
 class baseline_model_5(nn.Module):
     def __init__(
         self,
@@ -175,7 +168,6 @@ class baseline_model_5(nn.Module):
         out_channels,
         image_height,
         image_width,
-        fc_input_size,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
@@ -185,13 +177,17 @@ class baseline_model_5(nn.Module):
 
         self.num_layers = num_layers
 
-        self.concat_conv_ = StandardConv2D(
-            in_channels, out_channels
-        )
+        layers = []
+        current_in_channels = in_channels
+        for _ in range(num_layers):
+            layers.append(StandardConv2D(current_in_channels, out_channels))
+            current_in_channels = out_channels  
+
+        self.conv_layers = nn.Sequential(*layers)
 
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
-            output_shape = self.concat_conv_(dummy_input).shape
+            output_shape = self.conv_layers(dummy_input).shape
 
         fc_input_size = output_shape[1] * output_shape[2] * output_shape[3]
 
@@ -203,7 +199,7 @@ class baseline_model_5(nn.Module):
         )
 
     def forward(self, x):
-        x = self.concat_conv_(x)
+        x = self.conv_layers(x)
         x = x.reshape(x.size(0), -1)
         x = self.mlp(x)
         return x
