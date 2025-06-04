@@ -179,7 +179,7 @@ if __name__ == "__main__":
     targets = [label for _, label in train_dataset]
     num_classes = len(set(targets))
 
-    fc_hidden_size = 1
+    fc_hidden_size = 128
     fc_dropout_rate = 0.25
     epsilon = 1e-10
     eps = 1e-3

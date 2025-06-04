@@ -16,15 +16,17 @@ class model_1(nn.Module):
         super(model_1, self).__init__()
 
         self.pi_conv_layers = ProductUnits(in_channels, out_channels)
+        self.bn_prod = nn.BatchNorm2d(out_channels)
         
 
         with torch.no_grad():
-            dummy_input = torch.randn(1, in_channels, image_height, image_width)
-            output_shape = self.pi_conv_layers(dummy_input).shape
-
-        fc_input_size = out_channels * output_shape[2] * output_shape[3]
-        self.bn_prod = nn.BatchNorm2d(out_channels)
-
+          dummy_input = torch.randn(1, in_channels, image_height, image_width)
+          x = self.pi_conv_layers(dummy_input)
+          x = self.bn_prod(x)
+          x = F.relu(x)
+          x = F.max_pool2d(x, 2)  # <-- include this
+          fc_input_size = x.view(1, -1).size(1)  # <-- correct flattened size
+      
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
