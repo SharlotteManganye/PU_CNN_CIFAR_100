@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import torch
 
 
-
 class baseline_model_1(nn.Module):
     def __init__(
         self,
@@ -19,13 +18,13 @@ class baseline_model_1(nn.Module):
 
         self.conv_layers = StandardConv2D(
             in_channels, out_channels
-        )
+            )
+
         with torch.no_grad():
-            dummy_input = torch.randn(1, in_channels, image_height, image_width)
-            output_shape = self.conv_layers(dummy_input).shape
-
-        fc_input_size = out_channels * output_shape[2] * output_shape[3]
-
+          dummy_input = torch.randn(1, in_channels, image_height, image_width)
+          x = self.conv_layers(dummy_input)
+          fc_input_size = x.view(1, -1).size(1)  # <-- correct flattened size
+      
         self.mlp = MLP(
             fc_input_size=fc_input_size,
             fc_hidden_size=fc_hidden_size,
@@ -34,11 +33,10 @@ class baseline_model_1(nn.Module):
         )
 
     def forward(self, x):
-        x = self.conv_layers(x)
-        x = x.reshape(x.size(0), -1)
-        x = self.mlp(x)
-        return F.log_softmax(x, dim=1)
-
+      x = self.conv_layers(x)
+      x = x.reshape(x.size(0), -1)
+      x = self.mlp(x)
+      return F.log_softmax(x, dim=1)
 
 
 class baseline_model_2(nn.Module):
