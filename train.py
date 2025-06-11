@@ -81,8 +81,25 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
         print(f'Epoch: {epoch+1}, Train Loss: {avg_train_loss:.4f}, Train Accuracy: {avg_train_acc:.2f}%')
         if val_loader:
             print(f'\tVal Loss: {avg_val_loss:.4f}, Val Accuracy: {avg_val_acc:.2f}%')
+            early_stopping(avg_val_loss, model, epoch + 1) 
         if early_stopping.early_stop:
             print("Early stopping triggered!")
             break
     training_results(all_epoch_metrics, model, current_time_str, config_filename, base_results_dir, params_subdir)
-    return avg_train_loss, avg_train_acc # Returning last epoch's metrics
+    if early_stopping and early_stopping.best_epoch is not None:
+        # If early stopping was used and a best epoch was found, return its metrics.
+        # Find the epoch_data dictionary corresponding to the best_epoch.
+        best_epoch_data = next(
+            (item for item in all_epoch_metrics if item['Epoch'] == early_stopping.best_epoch),
+            None
+        )
+        if best_epoch_data:
+            return best_epoch_data
+        else:
+            # Fallback if best_epoch_data is not found (unlikely if early_stopping.best_epoch is set).
+            # Return the last epoch's metrics or an empty dictionary if no epochs ran.
+            return all_epoch_metrics[-1] if all_epoch_metrics else {}
+    else:
+        # If early stopping was not used or no best epoch was identified,
+        # return the metrics from the very last completed epoch.
+        return all_epoch_metrics[-1] if all_epoch_metrics else {}

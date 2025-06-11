@@ -7,11 +7,14 @@ import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from torch import optim
 
+
 from utils import *
 from models import *
 from baseline_models import *
 from train import *
 from test import *
+
+from hyperparameter_search import run_hyperparameter_search
 
 if __name__ == "__main__":
     # Accept config file as command parameter
@@ -232,6 +235,18 @@ if __name__ == "__main__":
         )
         optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
+    elif model_id == 0:
+        model = model_0(
+            in_channels,
+            out_channels,
+            image_height,
+            image_width,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+
     elif model_id == 4:
         model = model_4(
             in_channels,
@@ -326,17 +341,46 @@ if __name__ == "__main__":
 print(model)
 
 
-print_section("Training")
+# print_section("Training")
 
-train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir='results', params_subdir='model_parameters')
-
-
-print_section("Testing")
-
-test(model, test_loader, loss_func, device, config_filename)
+# train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir='results', params_subdir='model_parameters')
 
 
-print_section("Cross Validition")
+# print_section("Testing")
+
+# test(model, test_loader, loss_func, device, config_filename)
+
+
+print_section("Hyperparameter Search")
+base_results_dir = 'results'
+
+# Call the hyperparameter search function from the new file
+run_hyperparameter_search(
+        model_id=model_id,
+        number_channels=number_channels,
+        number_classes=number_classes,
+        image_height=image_height,
+        image_width=image_width,
+        out_channels=out_channels,
+        fc_hidden_size=fc_hidden_size,
+        fc_dropout_rate=fc_dropout_rate,
+        num_layers=num_layers,
+        epochs=epochs,
+        val_ratio=val_ratio,
+        seed=seed,
+        device=device,
+        loss_func=loss_func,
+        train_dataset=train_dataset,
+        config_filename=config_filename,
+        base_results_dir=base_results_dir
+    )
+
+
+
+
+
+
+# print_section("Cross Validition")
 
 # cross_validate(model, dataset, num_folds, batch_size, epochs, learning_rate, device, seed)
 
