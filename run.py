@@ -352,7 +352,6 @@ print(model)
 
 
 print_section("Hyperparameter Search")
-base_results_dir = 'results'
 
 # Call the hyperparameter search function from the new file
 run_hyperparameter_search(
@@ -372,7 +371,7 @@ run_hyperparameter_search(
         loss_func=loss_func,
         train_dataset=train_dataset,
         config_filename=config_filename,
-        base_results_dir=base_results_dir
+        base_results_dir= 'results'
     )
 
 

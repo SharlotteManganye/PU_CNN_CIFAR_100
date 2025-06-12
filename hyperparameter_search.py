@@ -28,9 +28,6 @@ def run_hyperparameter_search(
     config_filename,
     base_results_dir
 ):
-    """
-    Runs a hyperparameter search using pyhopper and saves the optimal parameters.
-    """
 
     def objective(params):
         from models import model_0, model_1, model_2, model_3, model_4, model_5
@@ -122,7 +119,7 @@ def run_hyperparameter_search(
             seed=seed
         )
 
-        # UPDATED: The train function now returns a dictionary of metrics
+
         last_epoch_metrics = train(
             model,
             train_loader,
@@ -131,11 +128,11 @@ def run_hyperparameter_search(
             epochs,
             device,
             val_loader=val_loader,
-            config_filename=config_filename
+            config_filename=config_filename,
+            save_outputs=False 
+
         )
 
-        # Pyhopper is set to "minimize", so return the validation loss directly
-        # Ensure 'Val_Loss' key exists in the dictionary returned by train()
         return last_epoch_metrics['Val_Loss']
 
     search_space = hp.Search({
@@ -146,7 +143,7 @@ def run_hyperparameter_search(
 
     print("Starting Hyperparameter Search...")
     # 'minimize' means it will search for the lowest value
-    results = search_space.run(objective, "minimize", "4h", n_jobs=1)
+    results = search_space.run(objective, "minimize", "1h", n_jobs=1)
     print("Hyperparameter Search Completed.")
 
     if results and 'best_params' in results:
@@ -166,7 +163,6 @@ def run_hyperparameter_search(
             "model_id": model_id,
             "config_file_used_for_search": config_filename,
             "optimal_parameters": best_params,
-            # 'best_loss' will be the minimized validation loss from pyhopper
             "best_validation_loss": results.get('best_loss', float('inf'))
         }
 

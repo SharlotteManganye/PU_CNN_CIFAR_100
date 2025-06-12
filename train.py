@@ -4,10 +4,8 @@ import pytz
 from utils import training_results 
 from early_stopping import early_stopping as EarlyStoppingClass
 
+
 def val(model, val_loader, loss_func, device):
-    """
-    Evaluates the model on the validation set and returns loss and accuracy.
-    """
     model.eval()
     val_loss = 0
     val_acc = 0
@@ -16,12 +14,13 @@ def val(model, val_loader, loss_func, device):
             data, target = data.to(device), target.to(device)
             output = model(data.float())
             loss = loss_func(output, target)
-            val_loss += loss.item() * data.size(0) # Correct loss accumulation
+            val_loss += loss.item() * data.size(0) 
             _, pred = output.max(1)
             val_acc += target.eq(pred).sum().item()
-    avg_val_loss = val_loss / len(val_loader.dataset) # Correct average
+    avg_val_loss = val_loss / len(val_loader.dataset) 
     avg_val_acc = 100. * val_acc / len(val_loader.dataset)
     return avg_val_loss, avg_val_acc
+
 
 def adaptive_clip_grad_norm(parameters, clip_factor=0.01, eps=1e-3):
     if not isinstance(parameters, torch.Tensor):
@@ -35,14 +34,15 @@ def adaptive_clip_grad_norm(parameters, clip_factor=0.01, eps=1e-3):
         for p in parameters:
             p.grad.detach().mul_(clip_coef.to(p.grad.device))
 
-def train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader, base_results_dir='results', params_subdir='model_parameters'):
+
+def train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader, base_results_dir='results', params_subdir='model_parameters',save_outputs=True):
     model.train()
     batch_size = train_loader.batch_size if train_loader else "N/A"
     learning_rate = optimizer.param_groups[0]['lr'] if optimizer.param_groups else "N/A"
     sa_timezone = pytz.timezone('Africa/Johannesburg')
     current_time_sast = datetime.now(sa_timezone)
     current_time_str = current_time_sast.strftime("%Y%m%d_%H%M%S")
-    all_epoch_metrics = [] # To store metrics for each epoch
+    all_epoch_metrics = [] 
     print(f"Training started for run at {current_time_str} SAST.")
     print(f"Initial Learning Rate: {learning_rate}")
     print(f"Batch Size: {batch_size}")
@@ -58,14 +58,15 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
             loss.backward()
             adaptive_clip_grad_norm(model.parameters())
             optimizer.step()
-            train_loss += loss.item() * data.size(0) # Correct loss accumulation
+            train_loss += loss.item() * data.size(0) 
             _, pred = output.max(1)
             train_acc += target.eq(pred).sum().item()
-        avg_train_loss = train_loss / len(train_loader.dataset) # Correct average
+        avg_train_loss = train_loss / len(train_loader.dataset) 
         avg_train_acc = 100. * train_acc / len(train_loader.dataset)
         avg_val_loss = 0.0
         avg_val_acc = 0.0
-        if val_loader: # Only run validation if a val_loader is provided
+
+        if val_loader:
             avg_val_loss, avg_val_acc = val(model, val_loader, loss_func, device)
         epoch_data = {
             'Epoch': epoch + 1,
@@ -75,7 +76,6 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
             'Val_Accuracy': avg_val_acc,
             'Batch_Size': batch_size,
             'Learning_Rate': learning_rate,
-            # Checkpoint_Path will be added by training_results
         }
         all_epoch_metrics.append(epoch_data)
         print(f'Epoch: {epoch+1}, Train Loss: {avg_train_loss:.4f}, Train Accuracy: {avg_train_acc:.2f}%')
@@ -85,10 +85,11 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
         if early_stopping.early_stop:
             print("Early stopping triggered!")
             break
-    training_results(all_epoch_metrics, model, current_time_str, config_filename, base_results_dir, params_subdir)
+    
+    if save_outputs:
+      training_results(all_epoch_metrics, model, current_time_str, config_filename, base_results_dir, params_subdir)
+    
     if early_stopping and early_stopping.best_epoch is not None:
-        # If early stopping was used and a best epoch was found, return its metrics.
-        # Find the epoch_data dictionary corresponding to the best_epoch.
         best_epoch_data = next(
             (item for item in all_epoch_metrics if item['Epoch'] == early_stopping.best_epoch),
             None
@@ -96,10 +97,6 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
         if best_epoch_data:
             return best_epoch_data
         else:
-            # Fallback if best_epoch_data is not found (unlikely if early_stopping.best_epoch is set).
-            # Return the last epoch's metrics or an empty dictionary if no epochs ran.
             return all_epoch_metrics[-1] if all_epoch_metrics else {}
     else:
-        # If early stopping was not used or no best epoch was identified,
-        # return the metrics from the very last completed epoch.
         return all_epoch_metrics[-1] if all_epoch_metrics else {}
