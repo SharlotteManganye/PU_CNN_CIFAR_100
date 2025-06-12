@@ -143,7 +143,7 @@ def run_hyperparameter_search(
 
     print("Starting Hyperparameter Search...")
     # 'minimize' means it will search for the lowest value
-    results = search_space.run(objective, "minimize", n_steps=300, n_jobs=1)
+    results = search_space.run(objective, "minimize",300, n_jobs=1)
     print("Hyperparameter Search Completed.")
 
     
