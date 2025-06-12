@@ -143,12 +143,17 @@ def run_hyperparameter_search(
 
     print("Starting Hyperparameter Search...")
     # 'minimize' means it will search for the lowest value
-    results = search_space.run(objective, "minimize", "1h", n_jobs=1)
+    results = search_space.run(objective, "minimize", n_steps=300, n_jobs=1)
     print("Hyperparameter Search Completed.")
 
-    if results and 'best_params' in results:
-        best_params = results['best_params']
-        
+    
+    if results and hasattr(results, 'best_params'):
+      
+        # print("Best Parameters Found:", best_params)
+        # print("Best Validation Loss:", best_loss)
+
+        best_params = results.best_params 
+        best_loss = results.best_loss    
         sa_timezone = pytz.timezone('Africa/Johannesburg')
         current_time_sast = datetime.now(sa_timezone)
         current_timestamp = current_time_sast.strftime("%Y%m%d_%H%M%S")
@@ -163,7 +168,9 @@ def run_hyperparameter_search(
             "model_id": model_id,
             "config_file_used_for_search": config_filename,
             "optimal_parameters": best_params,
-            "best_validation_loss": results.get('best_loss', float('inf'))
+            "best_validation_loss": results.best_loss
+
+
         }
 
         try:
