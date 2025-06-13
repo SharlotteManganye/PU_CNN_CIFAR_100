@@ -143,12 +143,12 @@ def run_hyperparameter_search(
 
     print("Starting Hyperparameter Search...")
     # 'minimize' means it will search for the lowest value
-    results = search_space.run(objective, "minimize",300, n_jobs=1)
+    results = search_space.run(objective, "minimize", "3h", n_jobs=1)
     print("Hyperparameter Search Completed.")
 
     
     if results and hasattr(results, 'best_params'):
-      
+     
         # print("Best Parameters Found:", best_params)
         # print("Best Validation Loss:", best_loss)
 
