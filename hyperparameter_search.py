@@ -144,9 +144,11 @@ def run_hyperparameter_search(
     results = search_space.run(
     objective,         
     "minimize",        
-    "30mins",           
+    "4h",           
     n_jobs=1   
     )
+    print(f"Type of results object: {type(results)}")
+    print(f"Directory of results object: {dir(results)}")
 
 
     print("Hyperparameter Search Completed.")
