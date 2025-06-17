@@ -18,12 +18,10 @@ from utils import load_config, print_section
 from train import train # Now expecting train to return a dict of metrics for the last/best epoch
 from test import test # Assuming your test function is in test.py (optional, for final evaluation)
 
-# Import model definitions (ensuring correct lowercase names as per your run.py)
 from models import model_0,model_1, model_2, model_3, model_4, model_5
 from baseline_models import baseline_model_1, baseline_model_2, baseline_model_3, baseline_model_4, baseline_model_5
 
 def get_full_dataset_with_targets(data_set_id, transform):
-
     if data_set_id == 1:  # CIFAR 10
         train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
         test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
@@ -45,15 +43,11 @@ def get_full_dataset_with_targets(data_set_id, transform):
 
 
 def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
-    """
-    Runs k-fold cross-validation based on the provided configuration.
-    """
     base_path = os.getcwd()
     config_path = os.path.join(base_path, "configs", config_filename)
     config = load_config(config_path)
 
     # Allocate config variables
-    
 
     program_config = config["program"]
     data_config = config["data"]
@@ -80,8 +74,9 @@ def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
     out_channels = model_config.get("out_channels")
     image_height = model_config.get("image_height") # Ensure these are present in config or derive them
     image_width = model_config.get("image_width")   # Example: For MNIST 28x28, CIFAR 32x32
-    fc_hidden_size = model_config.get("fc_hidden_size")
-    fc_dropout_rate = model_config.get("fc_dropout_rate")
+    fc_hidden_size = model_config.get("fc_hidden_size", 128)
+    fc_dropout_rate = model_config.get("fc_dropout_rate", 0.25)
+    out_channels = model_config.get("out_channels", 32)
     num_layers = model_config.get("num_layers")
 
     # Training variables
