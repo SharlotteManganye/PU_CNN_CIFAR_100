@@ -13,8 +13,8 @@ from models import *
 from baseline_models import *
 from train import *
 from test import *
-
 from hyperparameter_search import run_hyperparameter_search
+from cross_validation import *
 
 if __name__ == "__main__":
     # Accept config file as command parameter
@@ -64,7 +64,8 @@ if __name__ == "__main__":
     epsilon = training["epsilon"]
     grad_epsilon = training["grad_epsilon"]
     clip_factor = training["clip_factor"]
-    # optimizer = training["optimizer"]
+
+    Kfolds = training["Kfolds"]
     # loss_func = training["loss_func"]
 
     print_section("Configuration")
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     print(f"Gradient Epsilon: {grad_epsilon}")
     print(f"Clip Factor: {clip_factor}")
     print(f"Number of Layers: {num_layers}")
-    # print(f"optimizer: {optimizer}")
+    print(f"Kfolds: {Kfolds}")
     # print(f"loss_func: {loss_func}")
    
 
@@ -351,36 +352,35 @@ print(model)
 # test(model, test_loader, loss_func, device, config_filename)
 
 
-print_section("Hyperparameter Search")
+# print_section("Hyperparameter Search")
 
-# Call the hyperparameter search function from the new file
-run_hyperparameter_search(
-        model_id=model_id,
-        number_channels=number_channels,
-        number_classes=number_classes,
-        image_height=image_height,
-        image_width=image_width,
-        out_channels=out_channels,
-        fc_hidden_size=fc_hidden_size,
-        fc_dropout_rate=fc_dropout_rate,
-        num_layers=num_layers,
-        epochs=epochs,
-        val_ratio=val_ratio,
-        seed=seed,
-        device=device,
-        loss_func=loss_func,
-        train_dataset=train_dataset,
-        config_filename=config_filename,
-        base_results_dir= 'results'
-    )
-
-
+# # Call the hyperparameter search function from the new file
+# run_hyperparameter_search(
+#         model_id=model_id,
+#         number_channels=number_channels,
+#         number_classes=number_classes,
+#         image_height=image_height,
+#         image_width=image_width,
+#         out_channels=out_channels,
+#         fc_hidden_size=fc_hidden_size,
+#         fc_dropout_rate=fc_dropout_rate,
+#         num_layers=num_layers,
+#         epochs=epochs,
+#         val_ratio=val_ratio,
+#         seed=seed,
+#         device=device,
+#         loss_func=loss_func,
+#         train_dataset=train_dataset,
+#         config_filename=config_filename,
+#         base_results_dir= 'results'
+#     )
 
 
 
 
-# print_section("Cross Validition")
 
-# cross_validate(model, dataset, num_folds, batch_size, epochs, learning_rate, device, seed)
 
+print_section("Cross Validition")
+
+run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
 

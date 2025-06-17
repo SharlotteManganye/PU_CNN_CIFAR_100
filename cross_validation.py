@@ -19,35 +19,32 @@ from train import train # Now expecting train to return a dict of metrics for th
 from test import test # Assuming your test function is in test.py (optional, for final evaluation)
 
 # Import model definitions (ensuring correct lowercase names as per your run.py)
-from models import model_1, model_2, model_3, model_4, model_5
+from models import model_0,model_1, model_2, model_3, model_4, model_5
 from baseline_models import baseline_model_1, baseline_model_2, baseline_model_3, baseline_model_4, baseline_model_5
 
 def get_full_dataset_with_targets(data_set_id, transform):
-    """
-    Loads the full dataset (combining train and test splits) and returns the dataset
-    along with its targets, which are needed for StratifiedKFold.
-    """
+
     if data_set_id == 1:  # CIFAR 10
         train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
         test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
         full_dataset = torch.utils.data.ConcatDataset([train_dataset, test_dataset])
-        targets = torch.tensor(train_dataset.targets + test_dataset.targets)
+        targets = torch.cat((torch.tensor(train_dataset.targets), torch.tensor(test_dataset.targets)))
     elif data_set_id == 2:  # CIFAR 100
         train_dataset = datasets.CIFAR100(root='./data', train=True, download=True, transform=transform)
         test_dataset = datasets.CIFAR100(root='./data', train=False, download=True, transform=transform)
         full_dataset = torch.utils.data.ConcatDataset([train_dataset, test_dataset])
-        targets = torch.tensor(train_dataset.targets + test_dataset.targets)
+        targets = torch.cat((torch.tensor(train_dataset.targets), torch.tensor(test_dataset.targets)))
     elif data_set_id == 3:  # MNIST
         train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
         test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
         full_dataset = torch.utils.data.ConcatDataset([train_dataset, test_dataset])
-        targets = torch.tensor(train_dataset.targets + test_dataset.targets)
+        targets = torch.cat((torch.tensor(train_dataset.targets), torch.tensor(test_dataset.targets)))
     else:
         raise ValueError(f"Invalid data_set_id: {data_set_id}")
     return full_dataset, targets
 
 
-def run_cross_validation(config_filename, base_results_dir='results', n_splits=5):
+def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
     """
     Runs k-fold cross-validation based on the provided configuration.
     """
@@ -56,8 +53,11 @@ def run_cross_validation(config_filename, base_results_dir='results', n_splits=5
     config = load_config(config_path)
 
     # Allocate config variables
+    
+
     program_config = config["program"]
     data_config = config["data"]
+    data_set_id = data_config["data_set_id"]
     model_config = config["model"]
     training_config = config["training"]
 
@@ -101,16 +101,20 @@ def run_cross_validation(config_filename, base_results_dir='results', n_splits=5
     
     # Load the full dataset and its targets for StratifiedKFold
     full_dataset, targets = get_full_dataset_with_targets(data_set_id, transform)
+    sample_image = full_dataset[0][0]
+    image_height = sample_image.shape[1]
+    image_width = sample_image.shape[2]
+
 
     # Initialize StratifiedKFold for balanced splits across classes
-    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+    skf = StratifiedKFold(n_splits=Kfolds, shuffle=True, random_state=seed)
 
     all_fold_metrics_raw = [] # To store the dictionaries returned by train()
 
-    print_section(f"{n_splits}-Fold Cross-Validation")
+    print_section(f"{Kfolds}-Fold Cross-Validation")
 
     for fold, (train_indices, val_indices) in enumerate(skf.split(full_dataset, targets)):
-        print_section(f"Fold {fold+1}/{n_splits}")
+        print_section(f"Fold {fold+1}/{Kfolds}")
 
         # Create data subsets for this fold
         train_subset = Subset(full_dataset, train_indices)
@@ -277,11 +281,11 @@ if __name__ == "__main__":
         help="Path to the YAML config file for cross-validation.",
     )
     parser.add_argument(
-        "--n_splits",
+        "--Kfolds",
         type=int,
         default=5,
         help="Number of folds for cross-validation (default: 5).",
     )
     args = parser.parse_args()
 
-    run_cross_validation(args.config_file, n_splits=args.n_splits)
+    run_cross_validation(args.config_file, Kfolds=args.Kfolds)
