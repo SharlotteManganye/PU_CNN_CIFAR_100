@@ -16,12 +16,12 @@ model:
   num_layers : 1
 
 training:
-  batch_size: 128
+  batch_size: 64
   epochs: 30
-  learning_rate: 1e-3
+  learning_rate: 0.0006
   epsilon: 1e-10
   grad_epsilon: 1e-3
   clip_factor: 0.01
-  Kfolds: 10
+  Kfolds: 5
   fc_hidden_size: 128
   fc_dropout_rate:  0.25

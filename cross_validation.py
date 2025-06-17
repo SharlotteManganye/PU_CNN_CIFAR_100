@@ -120,7 +120,12 @@ def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
         val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False, num_workers=os.cpu_count())
 
         # Model instantiation for this fold (matching your run.py)
-        if model_id == 1:
+        if model_id == 0:
+            model = model_0(
+                number_channels, out_channels, image_height, image_width,
+                fc_hidden_size, number_classes, fc_dropout_rate,
+            )
+        elif model_id == 1:
             model = model_1(
                 number_channels, out_channels, image_height, image_width,
                 fc_hidden_size, number_classes, fc_dropout_rate,
