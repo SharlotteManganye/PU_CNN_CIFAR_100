@@ -22,5 +22,5 @@ training:
   epsilon: 1e-10
   grad_epsilon: 1e-3
   clip_factor: 0.01
-  Kfolds =10
+  Kfolds: 10
 

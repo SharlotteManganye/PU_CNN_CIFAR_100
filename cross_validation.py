@@ -181,7 +181,9 @@ def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
             raise ValueError(f"Invalid model ID: {model_id}")
 
         model = model.to(device)
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        
+        optimizer = optim.Adam(model.parameters(), lr=float(learning_rate))
+
 
         # Train the model for this fold; expecting it to return the last/best epoch's metrics dictionary
         last_epoch_metrics = train(
