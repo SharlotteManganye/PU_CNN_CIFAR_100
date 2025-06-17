@@ -127,8 +127,8 @@ class model_3(nn.Module):
 
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width) 
-            x = self.conv_layers1(x)
-            x = self.pi_conv_layers2(dummy_input)
+            x = self.conv_layers1(dummy_input)
+            x = self.pi_conv_layers2(x)
             x = self.bn(x)
             x = F.relu(x)
             x = F.max_pool2d(x, 2)
