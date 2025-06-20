@@ -7,7 +7,7 @@ class early_stopping:
     """
     Early stops the training if validation loss doesn't improve after a given patience.
     """
-    def __init__(self, patience=3, verbose=False, delta=0, path='checkpoint.pt', trace_func=print):
+    def __init__(self, patience=10, verbose=False, delta=0, path='checkpoint.pt', trace_func=print):
         """
         Args:
             patience (int): How many epochs to wait after last time validation loss improved.
