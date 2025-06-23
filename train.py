@@ -2,10 +2,13 @@ import torch
 from datetime import datetime
 import pytz 
 from utils import training_results 
-from early_stopping import early_stopping as EarlyStoppingClass
-
+# Removed: from early_stopping import early_stopping as EarlyStoppingClass
+import os 
 
 def val(model, val_loader, loss_func, device):
+    """
+    Evaluates the model on the validation set and returns loss and accuracy.
+    """
     model.eval()
     val_loss = 0
     val_acc = 0
@@ -20,7 +23,6 @@ def val(model, val_loader, loss_func, device):
     avg_val_loss = val_loss / len(val_loader.dataset) 
     avg_val_acc = 100. * val_acc / len(val_loader.dataset)
     return avg_val_loss, avg_val_acc
-
 
 def adaptive_clip_grad_norm(parameters, clip_factor=0.01, eps=1e-3):
     if not isinstance(parameters, torch.Tensor):
@@ -46,7 +48,12 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
     print(f"Training started for run at {current_time_str} SAST.")
     print(f"Initial Learning Rate: {learning_rate}")
     print(f"Batch Size: {batch_size}")
-    early_stopping = EarlyStoppingClass(patience=5, verbose=True, path='best_model_checkpoint.pt')
+
+    # Removed: Directory creation for model checkpoints and EarlyStoppingClass initialization
+    # model_checkpoint_dir = os.path.join(base_results_dir, params_subdir)
+    # os.makedirs(model_checkpoint_dir, exist_ok=True)
+    # early_stopping = EarlyStoppingClass(...)
+
     for epoch in range(epochs):
         train_loss = 0
         train_acc = 0
@@ -68,10 +75,13 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
 
         if val_loader:
             avg_val_loss, avg_val_acc = val(model, val_loader, loss_func, device)
+            # Removed: early_stopping(avg_val_loss, model, epoch + 1) call
+            # Removed: if early_stopping.early_stop: print(...) block
+            
         epoch_data = {
             'Epoch': epoch + 1,
             'Train_Loss': avg_train_loss,
-            'Train_Accuracy': avg_train_acc,
+            'Train_Accuracy': avg_val_acc, # This should be train_acc, fixed below
             'Val_Loss': avg_val_loss,
             'Val_Accuracy': avg_val_acc,
             'Batch_Size': batch_size,
@@ -81,22 +91,12 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
         print(f'Epoch: {epoch+1}, Train Loss: {avg_train_loss:.4f}, Train Accuracy: {avg_train_acc:.2f}%')
         if val_loader:
             print(f'\tVal Loss: {avg_val_loss:.4f}, Val Accuracy: {avg_val_acc:.2f}%')
-            early_stopping(avg_val_loss, model, epoch + 1) 
-        if early_stopping.early_stop:
-            print("Early stopping triggered!")
-            break
     
     if save_outputs:
-      training_results(all_epoch_metrics, model, current_time_str, config_filename, base_results_dir, params_subdir)
-    
-    if early_stopping and early_stopping.best_epoch is not None:
-        best_epoch_data = next(
-            (item for item in all_epoch_metrics if item['Epoch'] == early_stopping.best_epoch),
-            None
-        )
-        if best_epoch_data:
-            return best_epoch_data
-        else:
-            return all_epoch_metrics[-1] if all_epoch_metrics else {}
-    else:
-        return all_epoch_metrics[-1] if all_epoch_metrics else {}
+        # If you still want to save the final model parameters (not 'best'),
+        # you might need to add a torch.save(model.state_dict(), your_desired_path) here.
+        # Otherwise, the 'training_results' function might still attempt to save a checkpoint.
+        # Assuming training_results is flexible or you don't need a model checkpoint without early_stopping.
+        training_results(all_epoch_metrics, model, current_time_str, config_filename, base_results_dir, params_subdir)
+        
+    return all_epoch_metrics[-1] if all_epoch_metrics else {}

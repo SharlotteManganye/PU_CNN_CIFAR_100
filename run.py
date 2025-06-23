@@ -15,6 +15,7 @@ from train import *
 from test import *
 from hyperparameter_search import run_hyperparameter_search
 from cross_validation import *
+from visualize_feature_maps import * 
 
 if __name__ == "__main__":
     # Accept config file as command parameter
@@ -376,11 +377,11 @@ print(model)
 #     )
 
 
-
-
-
-
 print_section("Cross Validition")
 
 run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
+
+# print_section("Feature Maps Visualization")
+
+# show_feature_maps(feature_maps, 'Feature Mpas', num_maps=6)
 

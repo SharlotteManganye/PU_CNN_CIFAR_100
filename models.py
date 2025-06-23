@@ -34,15 +34,20 @@ class model_1(nn.Module):
             fc_dropout_rate=fc_dropout_rate,
         )
 
-    def forward(self, x):
+    def forward(self, x, return_feature_maps=False):
       x = self.pi_conv_layers(x)
       x = self.bn_prod(x)
       x = F.relu(x)
       x = F.max_pool2d(x, 2)
       # x = torch.log(torch.clamp(x, min=1e-6))
-      x = x.reshape(x.size(0), -1)
-      x = self.mlp(x)
-      return F.log_softmax(x, dim=1)
+      x_flat  = x.reshape(x.size(0), -1)
+      x_out  = self.mlp(x_flat)
+      output = F.log_softmax(x_out, dim=1)
+      if return_feature_maps:
+        return output, x
+      else:
+        return output
+
 
 
 class model_2(nn.Module):
@@ -90,19 +95,24 @@ class model_2(nn.Module):
             fc_dropout_rate=fc_dropout_rate,
         )
 
-    def forward(self, x):
-      x = self.pi_conv_layers1(x)
-      x = self.bn1(x)
-      x = F.relu(x)
-      x = F.max_pool2d(x, 2)
-      x = self.pi_conv_layers2(x)
-      x = self.bn2(x)
-      x = F.relu(x)
-      x = F.max_pool2d(x, 2)
-      x = self.dropout(x) 
-      x = x.reshape(x.size(0), -1)
-      x = self.mlp(x)
-      return F.log_softmax(x, dim=1)
+    def forward(self, x,return_feature_maps=False):
+      pi_cov = self.pi_conv_layers1(x)
+      pi_cov = self.bn1(pi_cov)
+      pi_cov = F.relu(pi_cov)
+      pi_cov = F.max_pool2d(pi_cov, 2)
+      pi_cov2 = self.pi_conv_layers2(pi_cov)
+      pi_cov2 = self.bn2(pi_cov2)
+      pi_cov2 = F.relu(pi_cov2)
+      pi_cov2 = F.max_pool2d(pi_cov2, 2)
+      pi_cov2 = self.dropout(pi_cov2) 
+      x_flat = x.reshape(pi_cov2.size(0), -1)
+      x_out = self.mlp(x_flat)
+      output = F.log_softmax(x_out, dim=1)
+      if return_feature_maps:
+        return output, pi_cov,pi_cov2
+      else:
+        return output
+      
 
 
 class model_3(nn.Module):
