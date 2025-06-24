@@ -7,7 +7,7 @@
 #PBS -l walltime=09:30:00
 #PBS -m abe -M u12201732@tuks.co.za
 #PBS -o /home/smanganye/lustre/stdoutput_M0.out
-#PBS -e /home/smanganye/lustre/stderror_M1.err
+#PBS -e /home/smanganye/lustre/stderror_M0.err
 
 source /etc/profile.d/modules.sh
 ulimit -s unlimited
@@ -19,4 +19,4 @@ cd /home/smanganye/lustre/Convolutional-Neural-Networks
 module load chpc/python/anaconda/3-2021.11
 source myenv/bin/activate
 
-python run.py model_1.yaml
+python run.py model_0.yaml
