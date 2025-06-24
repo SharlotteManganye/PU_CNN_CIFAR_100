@@ -28,13 +28,15 @@ def adaptive_clip_grad_norm(parameters, clip_factor=0.01, eps=1e-3):
     if not isinstance(parameters, torch.Tensor):
         parameters = list(filter(lambda p: p.grad is not None, parameters))
     if not parameters:
-        return
+        return 0.0  # Return 0 if no gradients
     device = parameters[0].device
     total_norm = torch.norm(torch.stack([torch.norm(p.grad.detach()).to(device) for p in parameters]))
     clip_coef = (clip_factor * total_norm) / (total_norm + eps)
     if clip_coef < 1:
         for p in parameters:
             p.grad.detach().mul_(clip_coef.to(p.grad.device))
+    return total_norm.item()
+
 
 
 def train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader, base_results_dir='results', params_subdir='model_parameters',save_outputs=True):
@@ -63,7 +65,7 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
             output = model(data.float())
             loss = loss_func(output, target)
             loss.backward()
-            adaptive_clip_grad_norm(model.parameters())
+            grad_norm = adaptive_clip_grad_norm(model.parameters())
             optimizer.step()
             train_loss += loss.item() * data.size(0) 
             _, pred = output.max(1)
@@ -86,6 +88,7 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
             'Val_Accuracy': avg_val_acc,
             'Batch_Size': batch_size,
             'Learning_Rate': learning_rate,
+            'Gradient_Norm': grad_norm,
         }
         all_epoch_metrics.append(epoch_data)
         print(f'Epoch: {epoch+1}, Train Loss: {avg_train_loss:.4f}, Train Accuracy: {avg_train_acc:.2f}%')
