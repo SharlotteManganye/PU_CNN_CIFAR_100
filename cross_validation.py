@@ -1,3 +1,5 @@
+# cross_validation (3).py
+
 import argparse
 import os
 import torch
@@ -11,11 +13,11 @@ import yaml
 import pandas as pd
 from datetime import datetime
 import pytz
-import numpy as np # Import numpy for std calculations
+import numpy as np
 
 # Import custom modules
 from utils import load_config, print_section
-from train import train # Now expecting train to return a dict of metrics for the last/best epoch
+from train import train # Make sure this imports the modified train function
 from test import test # Assuming your test function is in test.py (optional, for final evaluation)
 
 from models import model_0,model_1, model_2, model_3, model_4, model_5
@@ -42,12 +44,10 @@ def get_full_dataset_with_targets(data_set_id, transform):
     return full_dataset, targets
 
 
-def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
+def run_cross_validation(config_filename, Kfolds, base_results_dir='results'):
     base_path = os.getcwd()
     config_path = os.path.join(base_path, "configs", config_filename)
     config = load_config(config_path)
-
-    # Allocate config variables
 
     program_config = config["program"]
     data_config = config["data"]
@@ -55,7 +55,6 @@ def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
     model_config = config["model"]
     training_config = config["training"]
 
-    # Program variables
     seed = program_config["seed"]
     gen_rand_seed = program_config["gen_rand_seed"]
     gpu = program_config["gpu"]
@@ -67,59 +66,52 @@ def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
 
     device = torch.device("cuda" if torch.cuda.is_available() and gpu else "cpu")
 
-    # Model variables (using .get() for optional parameters that might not be in all configs)
     model_id = model_config["model_id"]
     number_channels = model_config["number_channels"]
     number_classes = model_config["number_classes"]
     out_channels = model_config.get("out_channels")
-    image_height = model_config.get("image_height") # Ensure these are present in config or derive them
-    image_width = model_config.get("image_width")   # Example: For MNIST 28x28, CIFAR 32x32
+    image_height = model_config.get("image_height")
+    image_width = model_config.get("image_width")
     fc_hidden_size = model_config.get("fc_hidden_size", 128)
     fc_dropout_rate = model_config.get("fc_dropout_rate", 0.25)
     out_channels = model_config.get("out_channels", 32)
     num_layers = model_config.get("num_layers")
 
-    # Training variables
     batch_size = training_config["batch_size"]
     epochs = training_config["epochs"]
     learning_rate = training_config["learning_rate"]
 
     loss_func = nn.CrossEntropyLoss()
 
-    # Define transforms (adjust this if your models require specific normalization)
     transform = transforms.Compose([
         transforms.ToTensor(),
-        # Add normalization here if your models expect it.
-        # Example: transforms.Normalize((mean,), (std,)) for grayscale
-        # Example: transforms.Normalize((mean_r, mean_g, mean_b), (std_r, std_g, std_b)) for RGB
     ])
-    
-    # Load the full dataset and its targets for StratifiedKFold
+
     full_dataset, targets = get_full_dataset_with_targets(data_set_id, transform)
     sample_image = full_dataset[0][0]
     image_height = sample_image.shape[1]
     image_width = sample_image.shape[2]
 
-
-    # Initialize StratifiedKFold for balanced splits across classes
     skf = StratifiedKFold(n_splits=Kfolds, shuffle=True, random_state=seed)
 
-    all_fold_metrics_raw = [] # To store the dictionaries returned by train()
+    all_fold_metrics_raw = []
 
     print_section(f"{Kfolds}-Fold Cross-Validation")
+
+    # Determine model name from config_filename for folder naming
+    model_name = os.path.splitext(config_filename)[0] # e.g., 'model_1' from 'model_1.yaml'
 
     for fold, (train_indices, val_indices) in enumerate(skf.split(full_dataset, targets)):
         print_section(f"Fold {fold+1}/{Kfolds}")
 
-        # Create data subsets for this fold
         train_subset = Subset(full_dataset, train_indices)
         val_subset = Subset(full_dataset, val_indices)
 
-        # Create data loaders for this fold
         train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count())
         val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False, num_workers=os.cpu_count())
 
-        # Model instantiation for this fold (matching your run.py)
+        # Model instantiation
+        # ... (Your existing model instantiation logic remains here) ...
         if model_id == 0:
             model = model_0(
                 number_channels, out_channels, image_height, image_width,
@@ -184,13 +176,19 @@ def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
             )
         else:
             raise ValueError(f"Invalid model ID: {model_id}")
+        # End of existing model instantiation logic
 
         model = model.to(device)
-        
+
         optimizer = optim.Adam(model.parameters(), lr=float(learning_rate))
 
+        # --- ADDED: Model saving path creation for each fold ---
+        # Create a directory structure like: results/model_name/fold_X/
+        model_fold_dir = os.path.join(base_results_dir, model_name, f"fold_{fold+1}")
+        os.makedirs(model_fold_dir, exist_ok=True)
+        model_save_path = os.path.join(model_fold_dir, f"{model_name}_fold_{fold+1}_params.pth")
+        # --------------------------------------------------------
 
-        # Train the model for this fold; expecting it to return the last/best epoch's metrics dictionary
         last_epoch_metrics = train(
             model,
             train_loader,
@@ -199,31 +197,28 @@ def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
             epochs,
             device,
             val_loader=val_loader,
-            config_filename=config_filename
+            config_filename=config_filename,
+            save_outputs=True, # Ensure this is True to enable saving
+            model_save_path=model_save_path # Pass the specific path for this fold
         )
-        
-        # Add fold number to the metrics
+
         last_epoch_metrics['Fold'] = fold + 1
         all_fold_metrics_raw.append(last_epoch_metrics)
 
     print_section("Cross-Validation Summary")
-    
-    # Process collected raw metrics into a DataFrame for presentation and export
+
     df_metrics = pd.DataFrame(all_fold_metrics_raw)
 
-    # Calculate averages
     avg_train_loss = df_metrics['Train_Loss'].mean()
     avg_val_loss = df_metrics['Val_Loss'].mean()
     avg_train_acc = df_metrics['Train_Accuracy'].mean()
     avg_val_acc = df_metrics['Val_Accuracy'].mean()
 
-    # Calculate standard deviations
     std_train_loss = df_metrics['Train_Loss'].std()
     std_val_loss = df_metrics['Val_Loss'].std()
     std_train_acc = df_metrics['Train_Accuracy'].std()
     std_val_acc = df_metrics['Val_Accuracy'].std()
 
-    # Collect results for export to Excel as per user's requested format
     fold_results_for_export = []
     for index, row in df_metrics.iterrows():
         fold_results_for_export.append(
@@ -238,7 +233,6 @@ def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
 
     fold_df = pd.DataFrame(fold_results_for_export)
 
-    # Add averages and standard deviations as new rows at the end
     avg_std_results = {
         "Fold": "Average",
         "Train Loss": avg_train_loss,
@@ -258,17 +252,17 @@ def run_cross_validation(config_filename,Kfolds, base_results_dir='results'):
         [fold_df, pd.DataFrame([avg_std_results, std_results])], ignore_index=True
     )
 
-    # Print the formatted table
     print(fold_df.to_string(index=False))
 
-    # Export the table to a CSV file with dynamic naming
-    sa_timezone = pytz.timezone('Africa/Johannesburg') 
+    sa_timezone = pytz.timezone('Africa/Johannesburg')
     current_time_sast = datetime.now(sa_timezone)
     current_time_str = current_time_sast.strftime("%Y%m%d_%H%M%S")
     yaml_base = os.path.splitext(config_filename)[0]
-    
-    cv_export_filename = os.path.join(base_results_dir, 'cross_validation', f"crossv_{yaml_base}_results_{current_time_str}.csv")
-    os.makedirs(os.path.dirname(cv_export_filename), exist_ok=True) # Ensure directory exists
+
+    # Changed export filename to reside within model's results directory
+    cv_summary_dir = os.path.join(base_results_dir, model_name) # Summary will go inside the model's directory
+    os.makedirs(cv_summary_dir, exist_ok=True)
+    cv_export_filename = os.path.join(cv_summary_dir, f"crossv_summary_{yaml_base}_results_{current_time_str}.csv")
 
     fold_df.to_csv(cv_export_filename, index=False)
     print(f"\nDetailed cross-validation results exported to {cv_export_filename}")

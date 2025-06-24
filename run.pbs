@@ -4,9 +4,9 @@
 #PBS -P CSCI1166
 #PBS -l place=free
 #PBS -l select=1:ncpus=20:mem=32gb
-#PBS -l walltime=05:30:00
+#PBS -l walltime=09:30:00
 #PBS -m abe -M u12201732@tuks.co.za
-#PBS -o /home/smanganye/lustre/stdoutput_M1.out
+#PBS -o /home/smanganye/lustre/stdoutput_M0.out
 #PBS -e /home/smanganye/lustre/stderror_M1.err
 
 source /etc/profile.d/modules.sh
