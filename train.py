@@ -68,7 +68,6 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
             _, pred = output.max(1)
             train_acc += target.eq(pred).sum().item()
         avg_train_loss = train_loss / len(train_loader.dataset)
-        # BUG FIX: This was incorrectly assigned to avg_val_acc. It should be avg_train_acc
         avg_train_acc = 100. * train_acc / len(train_loader.dataset)
         avg_val_loss = 0.0
         avg_val_acc = 0.0
@@ -79,7 +78,7 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
         epoch_data = {
             'Epoch': epoch + 1,
             'Train_Loss': avg_train_loss,
-            'Train_Accuracy': avg_train_acc, # FIXED THIS LINE
+            'Train_Accuracy': avg_train_acc, 
             'Val_Loss': avg_val_loss,
             'Val_Accuracy': avg_val_acc,
             'Batch_Size': batch_size,
@@ -91,19 +90,13 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
         if val_loader:
             print(f'\tVal Loss: {avg_val_loss:.4f}, Val Accuracy: {avg_val_acc:.2f}%')
 
-    if save_outputs and model_save_path: # Check if model_save_path is provided
-        # Ensure the directory for saving the model exists
+    if save_outputs and model_save_path: 
+
         os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
         torch.save(model.state_dict(), model_save_path)
         print(f"Model parameters saved to {model_save_path}")
     elif save_outputs and not model_save_path:
         print("Warning: save_outputs is True but model_save_path was not provided. Model parameters not saved.")
 
-    # You might still want to use training_results for metric logging if it does something specific
-    # However, for just saving the *final* model parameters, the torch.save above is sufficient.
-    # If training_results function in utils.py also saves the model, you'll need to adapt it.
-    # For now, let's assume it only handles the metric log/plot saving.
-    # if save_outputs:
-    #     training_results(all_epoch_metrics, model, current_time_str, config_filename, base_results_dir, params_subdir)
 
-    return all_epoch_metrics[-1] if all_epoch_metrics else {}
+    return all_epoch_metrics

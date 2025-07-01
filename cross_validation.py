@@ -189,7 +189,7 @@ def run_cross_validation(config_filename, Kfolds, base_results_dir='results'):
         model_save_path = os.path.join(model_fold_dir, f"{model_name}_fold_{fold+1}_params.pth")
         # --------------------------------------------------------
 
-        last_epoch_metrics = train(
+        all_epoch_metrics = train(
             model,
             train_loader,
             optimizer,
@@ -202,8 +202,15 @@ def run_cross_validation(config_filename, Kfolds, base_results_dir='results'):
             model_save_path=model_save_path # Pass the specific path for this fold
         )
 
-        last_epoch_metrics['Fold'] = fold + 1
-        all_fold_metrics_raw.append(last_epoch_metrics)
+        # Save all epoch metrics to CSV
+        metrics_df = pd.DataFrame(all_epoch_metrics)
+        metrics_save_path = os.path.join(model_fold_dir, f"metrics_fold_{fold+1}.csv")
+        metrics_df.to_csv(metrics_save_path, index=False)
+        # Optionally append final epoch metrics to summary
+        final_epoch_metrics = all_epoch_metrics[-1]
+        final_epoch_metrics['Fold'] = fold + 1
+        all_fold_metrics_raw.append(final_epoch_metrics)
+
 
     print_section("Cross-Validation Summary")
 
@@ -222,14 +229,17 @@ def run_cross_validation(config_filename, Kfolds, base_results_dir='results'):
     fold_results_for_export = []
     for index, row in df_metrics.iterrows():
         fold_results_for_export.append(
-            {
-                "Fold": row["Fold"],
-                "Train Loss": row["Train_Loss"],
-                "Val Loss": row["Val_Loss"],
-                "Train Accuracy": row["Train_Accuracy"],
-                "Val Accuracy": row["Val_Accuracy"],
-            }
-        )
+                    {
+        "Fold": row["Fold"],
+        "Train Loss": row["Train_Loss"],
+        "Val Loss": row["Val_Loss"],
+        "Train Accuracy": row["Train_Accuracy"],
+        "Val Accuracy": row["Val_Accuracy"],
+        "Batch_Size": batch_size,
+        "Learning_Rate": learning_rate,
+        "Gradient_Norm": row.get("Gradient_Norm", None),  # Use .get in case it's missing
+             }
+      )
 
     fold_df = pd.DataFrame(fold_results_for_export)
 
@@ -272,7 +282,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "config_file",
         nargs="?",
-        default="model_1.yaml", # Default config file
+        default="model_1.yaml", 
         type=str,
         help="Path to the YAML config file for cross-validation.",
     )
