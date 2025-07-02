@@ -105,7 +105,7 @@ class model_2(nn.Module):
       pi_cov2 = F.relu(pi_cov2)
       pi_cov2 = F.max_pool2d(pi_cov2, 2)
       pi_cov2 = self.dropout(pi_cov2) 
-      x_flat = x.reshape(pi_cov2.size(0), -1)
+      x_flat = pi_cov2.reshape(pi_cov2.size(0), -1)
       x_out = self.mlp(x_flat)
       output = F.log_softmax(x_out, dim=1)
       if return_feature_maps:

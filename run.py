@@ -383,5 +383,5 @@ run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
 
 # print_section("Feature Maps Visualization")
 
-# show_feature_maps(feature_maps, 'Feature Mpas', num_maps=6)
+# visualize_feature_maps(model, train_loader , mean, std, device, num_maps=6)
 
