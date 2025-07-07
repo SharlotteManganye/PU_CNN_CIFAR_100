@@ -1,13 +1,13 @@
 #!/bin/sh
 #PBS -N PU_CNN_GPU # Changed name to reflect GPU usage
-#PBS -q gpu         # <--- IMPORTANT: Request a GPU queue if your cluster has one (common)
+#PBS -q gpu         
 #PBS -P CSCI1166
 #PBS -l place=free
-#PBS -l select=1:ncpus=20:mem=32gb:ngpus=1 # <--- IMPORTANT: Request 1 GPU
+#PBS -l select=1:ncpus=20:mem=32gb:ngpus=1 
 #PBS -l walltime=12:00:00
 #PBS -m abe -M u12201732@tuks.co.za
-#PBS -o /home/smanganye/lustre/stdoutput_M5_gpu.out # Changed output file name
-#PBS -e /home/smanganye/lustre/stderror_M5_gpu.err   # Changed error file name
+#PBS -o /home/smanganye/lustre/stdoutput_M5_gpu.out 
+#PBS -e /home/smanganye/lustre/stderror_M5_gpu.err 
 
 source /etc/profile.d/modules.sh
 ulimit -s unlimited
