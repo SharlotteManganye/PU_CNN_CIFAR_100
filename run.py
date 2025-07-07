@@ -6,6 +6,8 @@ import torch
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from torch import optim
+import re
+
 
 
 from utils import *
@@ -339,7 +341,7 @@ if __name__ == "__main__":
 
     else:
         print("Please input a valid model ID")
-
+model_name_str = os.path.splitext(config_filename)[0]
 print(model)
 
 
@@ -377,11 +379,11 @@ print(model)
 #     )
 
 
-print_section("Cross Validition")
+# print_section("Cross Validition")
 
-run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
+# run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
 
-# print_section("Feature Maps Visualization")
+print_section("Feature Maps Visualization")
+save_feature_maps_from_model(model, train_loader, mean, std, device, model_name=model_name_str, output_base_dir="results/feature_maps", num_maps=16)
 
-# visualize_feature_maps(model, train_loader , mean, std, device, num_maps=6)
 

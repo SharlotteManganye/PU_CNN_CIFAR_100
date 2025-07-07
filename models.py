@@ -204,15 +204,19 @@ class model_0(nn.Module):
             fc_dropout_rate=fc_dropout_rate,
         )
 
-    def forward(self, x):
-        x = self.pi_conv_layers1(x)
-        x = self.bn(x)
-        x = F.relu(x)
-        x = F.max_pool2d(x, 2)
-        x = self.conv_layers1(x)
-        x = x.reshape(x.size(0), -1)
-        x = self.mlp(x)
-        return F.log_softmax(x, dim=1)
+    def forward(self, x, return_feature_maps=False):
+        pi_conv = self.pi_conv_layers1(x)
+        pi_conv = self.bn(pi_conv)
+        pi_conv= F.relu(pi_conv)
+        pi_conv = F.max_pool2d(pi_conv, 2)
+        conv = self.conv_layers1(pi_conv)
+        x_flat = conv.reshape(conv.size(0), -1)
+        x_out = self.mlp(x_flat)
+        output = F.log_softmax(x_out, dim=1)
+        if return_feature_maps:
+          return output, pi_conv,conv
+        else:
+          return output
 
 class model_4(nn.Module):
     def __init__(
