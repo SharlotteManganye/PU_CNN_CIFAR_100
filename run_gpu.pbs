@@ -5,24 +5,18 @@
 #PBS -l place=free                    
 #PBS -l select=1:ncpus=9:mem=32gb:ngpus=1
 #PBS -l walltime=12:00:00
-#PBS -m abe
 #PBS -M u12201732@tuks.co.za
 #PBS -o /home/smanganye/lustre/stdoutput_M5_gpu.out
 #PBS -e /home/smanganye/lustre/stderror_M5_gpu.err
 
 source /etc/profile.d/modules.sh
 ulimit -s unlimited
-
-echo "Job started on $(hostname) at $(date)"
-echo "Working directory: $PBS_O_WORKDIR"
+echo 'Run Starting'
 
 cd /home/smanganye/lustre/Convolutional-Neural-Networks
-
-module purge
 module load chpc/python/anaconda/3-2021.11
-module load chpc/cuda/9.1       
-
+   
 source myenv/bin/activate
 python run.py model_5.yaml
 
-echo "Job finished at $(date)"
+
