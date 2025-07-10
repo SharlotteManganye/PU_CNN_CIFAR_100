@@ -379,11 +379,11 @@ print(model)
 #     )
 
 
-# print_section("Cross Validition")
+print_section("Cross Validition")
 
-# run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
+run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
 
-print_section("Feature Maps Visualization")
-save_feature_maps_from_model(model, train_loader, mean, std, device, model_name=model_name_str, output_base_dir="results/feature_maps", num_maps=16)
+# print_section("Feature Maps Visualization")
+# save_feature_maps_from_model(model, train_loader, mean, std, device, model_name=model_name_str, output_base_dir="results/feature_maps", num_maps=16)
 
 
