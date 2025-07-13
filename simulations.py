@@ -10,7 +10,7 @@ from torch import nn, optim
 from models import *
 from baseline_models import *
 
-def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base_results_dir="results\Simulations"):
+def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base_results_dir="results/simulations"):
     config_path = os.path.join("configs", config_filename)
     config = load_config(config_path)
 
@@ -109,7 +109,27 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
         model_save_path = os.path.join(sim_dir, "model_parameters", "final_model.pth")
         os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
 
-        train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir=sim_dir, params_subdir="model_parameters", model_save_path=model_save_path)
+        epoch_metrics = train(
+          model,
+        train_loader,
+        optimizer,
+        loss_func,
+        epochs,
+        device,
+        config_filename,
+        val_loader=val_loader,
+        base_results_dir=sim_dir,
+        params_subdir="model_parameters",
+        save_outputs=False  # Prevent `train()` from saving the CSV
+        )
+        sa_timezone = pytz.timezone('Africa/Johannesburg')
+        current_time_str = datetime.now(sa_timezone).strftime("%Y%m%d_%H%M%S")
+
+
+        df = pd.DataFrame(epoch_metrics)
+        metrics_path = os.path.join(sim_dir, "model_parameters", f"epoch_metrics_{current_time_str}.csv")
+        df.to_csv(metrics_path, index=False)
+        print(f"Epoch metrics saved to {metrics_path}")
 
         test_loss, test_acc = test(model, test_loader, loss_func, device, config_filename, base_results_dir=os.path.join(sim_dir, "test"))
         print(f"Simulation {run_id} - Test Loss: {test_loss:.4f}, Test Accuracy: {test_acc:.2f}%")
