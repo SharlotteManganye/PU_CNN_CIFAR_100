@@ -17,7 +17,7 @@ model:
 
 training:
   batch_size: 64
-  epochs: 2
+  epochs: 150
   learning_rate: 0.0006
   epsilon: 1e-10
   grad_epsilon: 1e-3
