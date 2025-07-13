@@ -18,6 +18,7 @@ from test import *
 from hyperparameter_search import run_hyperparameter_search
 from cross_validation import *
 from visualize_feature_maps import * 
+from simulations import *
 
 if __name__ == "__main__":
     # Accept config file as command parameter
@@ -347,12 +348,24 @@ print(model)
 
 # print_section("Training")
 
-# train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir='results', params_subdir='model_parameters')
-
+# train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir='results', params_subdir='model_parameters',min_epochs=5)
 
 # print_section("Testing")
 
-# test(model, test_loader, loss_func, device, config_filename)
+
+# test_loss, test_acc = test(
+#     model,
+#     test_loader,
+#     loss_func,
+#     device,
+#     config_filename,
+#     base_results_dir='results\test'
+# )
+
+
+print_section("SIMULATIONS")
+
+run_simulations(config_filename)
 
 
 # print_section("Hyperparameter Search")
@@ -379,9 +392,9 @@ print(model)
 #     )
 
 
-print_section("Cross Validition")
+# print_section("Cross Validition")
 
-run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
+# run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
 
 # print_section("Feature Maps Visualization")
 # save_feature_maps_from_model(model, train_loader, mean, std, device, model_name=model_name_str, output_base_dir="results/feature_maps", num_maps=16)

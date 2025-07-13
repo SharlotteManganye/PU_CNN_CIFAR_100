@@ -2,7 +2,7 @@
 import torch
 from datetime import datetime
 import pytz
-from utils import training_results # Ensure this is still relevant for metric logging, or remove if saving is handled externally
+from utils import training_results
 import os
 
 def val(model, val_loader, loss_func, device):
@@ -28,7 +28,7 @@ def adaptive_clip_grad_norm(parameters, clip_factor=0.01, eps=1e-3):
     if not isinstance(parameters, torch.Tensor):
         parameters = list(filter(lambda p: p.grad is not None, parameters))
     if not parameters:
-        return 0.0  # Return 0 if no gradients
+        return 0.0 
     device = parameters[0].device
     total_norm = torch.norm(torch.stack([torch.norm(p.grad.detach()).to(device) for p in parameters]))
     clip_coef = (clip_factor * total_norm) / (total_norm + eps)
@@ -97,6 +97,4 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
         print(f"Model parameters saved to {model_save_path}")
     elif save_outputs and not model_save_path:
         print("Warning: save_outputs is True but model_save_path was not provided. Model parameters not saved.")
-
-
     return all_epoch_metrics
