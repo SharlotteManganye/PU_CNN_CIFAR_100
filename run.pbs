@@ -1,9 +1,9 @@
 #!/bin/sh
 #PBS -N PU_CNN
-#PBS -q normal
+#PBS -q serial
 #PBS -P CSCI1166
 #PBS -l place=free
-#PBS -l select=1:ncpus=128:mem=32gb
+#PBS -l select=1:ncpus=20:mem=32gb
 #PBS -l walltime=12:00:00
 #PBS -m abe -M u12201732@tuks.co.za
 #PBS -o /home/smanganye/lustre/stdoutput_M1.out
