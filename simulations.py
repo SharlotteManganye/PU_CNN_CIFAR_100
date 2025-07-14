@@ -105,7 +105,9 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
 
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-        sim_dir = os.path.join(base_results_dir, f"model_{model_id}", f"simulation_{run_id}")
+        
+        yaml_base = os.path.splitext(os.path.basename(config_filename))[0]
+        sim_dir = os.path.join(base_results_dir, yaml_base, f"model_{model_id}", f"simulation_{run_id}")
         model_save_path = os.path.join(sim_dir, "model_parameters", "final_model.pth")
         os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
 
