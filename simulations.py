@@ -29,7 +29,7 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
     num_layers = model_cfg["num_layers"]
     batch_size = training["batch_size"]
     epochs = training["epochs"]
-    learning_rate = training["learning_rate"]
+    learning_rate = float(training["learning_rate"])
     epsilon = training["epsilon"]
     grad_epsilon = training["grad_epsilon"]
     clip_factor = training["clip_factor"]
@@ -103,6 +103,7 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
         else:
             raise ValueError("Invalid model ID")
 
+       
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
         
