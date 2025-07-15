@@ -121,6 +121,16 @@ def save_model_checkpoint(model, epoch, params_dir):
     torch.save(model.state_dict(), checkpoint_filename)
     return checkpoint_filename
 
+    
+def get_train_loader(train_dataset, batch_size, num_workers, seed):
+    torch.manual_seed(seed)
+    return DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers
+    )
+
 
 def training_results(all_epoch_metrics, model, current_time_str, config_filename, base_results_dir='results', params_subdir='model_parameters'):
     import os
