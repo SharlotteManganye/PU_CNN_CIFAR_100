@@ -16,6 +16,10 @@ def get_train_loader(train_dataset, batch_size, num_workers, seed):
     torch.manual_seed(seed)
     return DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
+
+def get_test_loader(dataset, batch_size, num_workers):
+    return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
 def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base_results_dir="results/simulations"):
     config_path = os.path.join("configs", config_filename)
     config = load_config(config_path)
@@ -33,10 +37,11 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
     epochs = training["epochs"]
     learning_rate = float(training["learning_rate"])
     number_classes = model_cfg["number_classes"]
-    num_layers = model_cfg["num_layers"]
+    num_layers = model_cfg.get("num_layers", None) 
 
     device = torch.device("cuda" if gpu and torch.cuda.is_available() else "cpu")
-    num_workers = os.cpu_count()
+
+    num_workers = 2 
 
     if data_set_id == 1:
         dataset = datasets.CIFAR10
@@ -70,7 +75,7 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
 
     fc_hidden_size = 128
     fc_dropout_rate = 0.25
-    dropout_rate = 0.25
+    dropout_rate = 0.25 
     loss_func = nn.CrossEntropyLoss()
 
     for run_id in range(1, num_runs + 1):
@@ -78,20 +83,36 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
         torch.manual_seed(seed + run_id)
 
         model = select_model(model_id, in_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate, dropout_rate, num_layers)
+        model = model.to(device)
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-        yaml_base = os.path.splitext(os.path.basename(config_filename))[0]
-        sim_dir = os.path.join(base_results_dir, f"model_{model_id}", f"simulation_{run_id}")
+        model_name = os.path.splitext(config_filename)[0]
+        sim_dir = os.path.join(base_results_dir, model_name, f"simulation_{run_id}")
         os.makedirs(sim_dir, exist_ok=True)
 
-        epoch_metrics = []
+        epoch_metrics = [] 
         for epoch in range(1, epochs + 1):
-            train_acc = train(model, train_loader, optimizer, loss_func, 1, device, config_filename, val_loader=None, base_results_dir=sim_dir, params_subdir="", save_outputs=False)[-1]["Train_Accuracy"]
+            current_epoch_train_metrics_list = train(
+                model, train_loader, optimizer, loss_func, 1, device, config_filename,
+                val_loader=None, 
+                base_results_dir=sim_dir,
+                params_subdir="",
+                save_outputs=False 
+            )
+
+            current_train_metrics = current_epoch_train_metrics_list[0] 
+            
+            train_loss_current_epoch = current_train_metrics['Train_Loss']
+            train_acc_current_epoch = current_train_metrics['Train_Accuracy']
+
             test_loss, test_acc = test(model, test_loader, loss_func, device, config_filename, base_results_dir=sim_dir)
-            print(f"Epoch {epoch}: Train Accuracy = {train_acc:.2f}%, Test Accuracy = {test_acc:.2f}%, Test Loss = {test_loss:.4f}")
+            
+            # Use the extracted scalar values for printing
+            print(f"Epoch {epoch}: Train Loss = {train_loss_current_epoch:.4f}, Train Accuracy = {train_acc_current_epoch:.2f}%, Test Accuracy = {test_acc:.2f}%, Test Loss = {test_loss:.4f}")
             epoch_metrics.append({
                 "Epoch": epoch,
-                "Train_Accuracy": train_acc,
+                "Train_Loss": train_loss_current_epoch,
+                "Train_Accuracy": train_acc_current_epoch,
                 "Test_Accuracy": test_acc,
                 "Test_Loss": test_loss
             })
@@ -99,7 +120,7 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
         sa_timezone = pytz.timezone('Africa/Johannesburg')
         current_time_str = datetime.now(sa_timezone).strftime("%Y%m%d_%H%M%S")
         df = pd.DataFrame(epoch_metrics)
-        metrics_path = os.path.join(sim_dir, f"epoch_metrics_{current_time_str}.csv")
+        metrics_path = os.path.join(sim_dir, f"epoch_metrics.csv") 
         df.to_csv(metrics_path, index=False)
         print(f"Epoch metrics saved to {metrics_path}")
 

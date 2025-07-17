@@ -352,15 +352,7 @@ print(model)
 
 # print_section("Testing")
 
-
-# test_loss, test_acc = test(
-#     model,
-#     test_loader,
-#     loss_func,
-#     device,
-#     config_filename,
-#     base_results_dir='results\test'
-# )
+# test_loss, test_acc = test(model, test_loader, loss_func, device, config_filename, base_results_dir='results/test', save_results=True, epoch=epochs)
 
 
 print_section("SIMULATIONS")

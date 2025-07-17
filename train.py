@@ -39,7 +39,7 @@ def adaptive_clip_grad_norm(parameters, clip_factor=0.01, eps=1e-3):
 
 
 def train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader,
-          base_results_dir='results', params_subdir='model_parameters', save_outputs=True): # Removed model_save_path argument
+          base_results_dir='results', params_subdir='model_parameters', save_outputs=False): # Removed model_save_path argument
     model.train()
     batch_size = train_loader.batch_size if train_loader else "N/A"
     learning_rate = optimizer.param_groups[0]['lr'] if optimizer.param_groups else "N/A"
@@ -97,7 +97,7 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
      
         model_name = os.path.splitext(os.path.basename(config_filename))[0]
 
-        csv_filename = os.path.join(metrics_output_dir, f"{model_name}_epoch_metrics_{current_time_str}.csv")
+        csv_filename = os.path.join(metrics_output_dir, f"{model_name}_epoch_metrics.csv")
 
         
         df_metrics = pd.DataFrame(all_epoch_metrics)
