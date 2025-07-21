@@ -166,12 +166,15 @@ def run_hyperparameter_search(
         current_time_sast = datetime.now(sa_timezone)
         current_timestamp = current_time_sast.strftime("%Y%m%d_%H%M%S")
 
-        optimization_results_dir = os.path.join(base_results_dir)
+        
+        model_dir_name = f"model_{model_id}"
+        optimization_results_dir = os.path.join(base_results_dir, "pyhopper", model_dir_name)
+
         os.makedirs(optimization_results_dir, exist_ok=True)
 
         optimization_filename = os.path.join(
             optimization_results_dir,
-            f"model{model_id}_optimization_{current_timestamp}.json"
+            f"model{model_id}_optimization.json"
         )
 
         data_to_save = {
