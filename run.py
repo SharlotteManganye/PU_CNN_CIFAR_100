@@ -94,10 +94,8 @@ if __name__ == "__main__":
     # print(f"loss_func: {loss_func}")
    
 
-    device = "cpu"
-    if gpu:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    device = torch.device("cuda" if gpu and torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
     # Get number of workers for CPU
