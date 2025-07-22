@@ -1,10 +1,11 @@
 import torch
 from datetime import datetime
 import pytz
-# from utils import training_results # We will handle CSV saving directly here
 import os
-import pandas as pd # <-- New import needed for CSV saving
+import pandas as pd
 
+
+    
 def val(model, val_loader, loss_func, device):
     """
     Evaluates the model on the validation set and returns loss and accuracy.
