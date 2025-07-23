@@ -16,9 +16,9 @@ model:
   num_layers : 1
 
 training:
-  batch_size: 64
-  epochs: 10
-  learning_rate: 0.003
+  batch_size: 32
+  epochs: 150
+  learning_rate: 5e-05
   epsilon: 1e-8
   grad_epsilon: 1e-3
   clip_factor: 0.1

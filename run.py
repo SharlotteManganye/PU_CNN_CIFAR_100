@@ -353,33 +353,33 @@ print(model)
 # test_loss, test_acc = test(model, test_loader, loss_func, device, config_filename, base_results_dir='results/test', save_results=True, epoch=epochs)
 
 
-# print_section("SIMULATIONS")
+print_section("SIMULATIONS")
 
-# run_simulations(config_filename)
+run_simulations(config_filename)
 
 
-print_section("Hyperparameter Search")
+# print_section("Hyperparameter Search")
 
-# Call the hyperparameter search function from the new file
-run_hyperparameter_search(
-        model_id=model_id,
-        number_channels=number_channels,
-        number_classes=number_classes,
-        image_height=image_height,
-        image_width=image_width,
-        out_channels=out_channels,
-        fc_hidden_size=fc_hidden_size,
-        fc_dropout_rate=fc_dropout_rate,
-        num_layers=num_layers,
-        epochs=epochs,
-        val_ratio=val_ratio,
-        seed=seed,
-        device=device,
-        loss_func=loss_func,
-        train_dataset=train_dataset,
-        config_filename=config_filename,
-        base_results_dir= 'results'
-    )
+# # Call the hyperparameter search function from the new file
+# run_hyperparameter_search(
+#         model_id=model_id,
+#         number_channels=number_channels,
+#         number_classes=number_classes,
+#         image_height=image_height,
+#         image_width=image_width,
+#         out_channels=out_channels,
+#         fc_hidden_size=fc_hidden_size,
+#         fc_dropout_rate=fc_dropout_rate,
+#         num_layers=num_layers,
+#         epochs=epochs,
+#         val_ratio=val_ratio,
+#         seed=seed,
+#         device=device,
+#         loss_func=loss_func,
+#         train_dataset=train_dataset,
+#         config_filename=config_filename,
+#         base_results_dir= 'results'
+#     )
 
 
 # print_section("Cross Validition")
