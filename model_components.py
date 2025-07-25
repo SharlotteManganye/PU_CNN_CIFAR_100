@@ -46,11 +46,15 @@ class MLP(nn.Module):
         return self.fc_model(x)
 
 
+
 class StandardConv2D(nn.Module):
-    def __init__(
-        self, in_channels, out_channels
-    ):
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1, dropout_rate=0.5):
         super().__init__()
+        # Ensure all values are integers
+        kernel_size = int(kernel_size)
+        stride = int(stride)
+        padding = int(padding)
+
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding)
         self.bn = nn.BatchNorm2d(out_channels)
         self.activation_func = nn.ReLU()
@@ -173,70 +177,59 @@ class ProductUnits(nn.Module):
         return output
 
 
-
-
 class ConcatConv2DProductUnits(nn.Module):
     def __init__(
-        self, in_channels, num_layers, initial_out_channels=16, kernel_size=3
+        self, in_channels, num_layers, initial_out_channels=16, kernel_size=3, dropout_rate=0.5
     ):
         super(ConcatConv2DProductUnits, self).__init__()
         self.kernel_size = kernel_size
         self.layers = nn.ModuleList()
         self.bn_layers = nn.ModuleList()
         self.num_layers = num_layers
-        self.initial_out_channels = initial_out_channels  # Store initial_out_channels
+        self.initial_out_channels = initial_out_channels
 
         in_channels_ = in_channels
         out_channels_ = initial_out_channels
         for i in range(num_layers):
-            # Create a layer that combines ProductUnits and Conv2d
             self.layers.append(
-                nn.ModuleList(
-                    [
-                        ProductUnits(
-                            in_channels_, out_channels_
-                        ),
-                        nn.Conv2d(
-                            in_channels_,
-                            out_channels_,
-                            kernel_size=kernel_size,
-                            padding=kernel_size // 2,
-                        ),
-                    ]
-                )
+                nn.ModuleList([
+                    ProductUnits(in_channels_, out_channels_),
+                    StandardConv2D(
+                        in_channels_, out_channels_,
+                        kernel_size=kernel_size,
+                        stride=1,
+                        padding=kernel_size // 2,
+                        dropout_rate=dropout_rate
+                    ),
+                ])
             )
             self.bn_layers.append(
-                nn.ModuleList(
-                    [
-                        nn.BatchNorm2d(out_channels_),  # BN for ProductUnits output
-                        nn.BatchNorm2d(out_channels_),  # BN for Conv2d output
-                    ]
-                )
+                nn.ModuleList([
+                    nn.BatchNorm2d(out_channels_),
+                    nn.Identity(),  # Already handled in StandardConv2D
+                ])
             )
             in_channels_ = out_channels_ * 2
-            out_channels_ = out_channels_ * 2  # Double the number of channels
+            out_channels_ = out_channels_ * 2
 
         self.out_channels_list = [
             initial_out_channels * (2**i) for i in range(num_layers)
-        ]  # store
+        ]
 
     def forward(self, x):
         for i, (product_conv, conv) in enumerate(self.layers):
-            bn_prod, bn_conv = self.bn_layers[i]
+            bn_prod, _ = self.bn_layers[i]
 
             y = product_conv(x)
             y = bn_prod(y)
             y = F.relu(y)
+            y = F.dropout(y, p=0.5, training=self.training)
 
-            z = conv(x)
-            z = bn_conv(z)
-            z = F.relu(z)
+            z = conv(x)  # StandardConv2D handles BN, ReLU, Dropout
 
             if y.shape[2:] != z.shape[2:]:
-                z = F.interpolate(
-                    z, size=y.shape[2:], mode="bilinear", align_corners=False
-                )
+                z = F.interpolate(z, size=y.shape[2:], mode="bilinear", align_corners=False)
 
-            x = torch.cat((y, z), dim=1)  # Concatenate the outputs
+            x = torch.cat((y, z), dim=1)
 
-        return x  # Return the final feature map
+        return x

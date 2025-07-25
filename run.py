@@ -104,57 +104,79 @@ if __name__ == "__main__":
     print_section("Data Downloading")
 
     if data_set_id == 1:
-        # CIFAR10
-        train_dataset_mean_std = datasets.CIFAR10(
-            root="./data", train=True, download=True, transform=transforms.ToTensor()
-        )
+    # CIFAR10
+      train_dataset_mean_std = datasets.CIFAR10(
+        root="./data", train=True, download=True, transform=transforms.ToTensor()
+      )
 
-        mean, std = data_mean_std_rgb(train_dataset_mean_std)
+      mean, std = data_mean_std_rgb(train_dataset_mean_std)
 
-        # Prepare data
-        transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize(mean, std)]
-        )
+    # Data augmentation for training
+      train_transform = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(10),
+        transforms.RandomResizedCrop(size=32, scale=(0.8, 1.0)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
 
-        train_dataset = datasets.CIFAR10(root="data", train=True, transform=transform)
+      test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
 
-        test_dataset = datasets.CIFAR10(root="data", train=False, transform=transform)
+      train_dataset = datasets.CIFAR10(root="data", train=True, transform=train_transform)
+      test_dataset = datasets.CIFAR10(root="data", train=False, transform=test_transform)
 
     elif data_set_id == 2:
-        # CIFAR100
-        train_dataset_mean_std = datasets.CIFAR100(
-            root="./data", train=True, download=True, transform=transforms.ToTensor()
-        )
+    # CIFAR100
+      train_dataset_mean_std = datasets.CIFAR100(
+        root="./data", train=True, download=True, transform=transforms.ToTensor()
+      )
 
-        mean, std = data_mean_std_rgb(train_dataset_mean_std)
+      mean, std = data_mean_std_rgb(train_dataset_mean_std)
 
-        # Prepare data
-        transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize(mean, std)]
-        )
+      train_transform = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(10),
+        transforms.RandomResizedCrop(size=32, scale=(0.8, 1.0)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
 
-        train_dataset = datasets.CIFAR100(root="data", train=True, transform=transform)
+      test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
 
-        test_dataset = datasets.CIFAR100(root="data", train=False, transform=transform)
+      train_dataset = datasets.CIFAR100(root="data", train=True, transform=train_transform)
+      test_dataset = datasets.CIFAR100(root="data", train=False, transform=test_transform)
 
     elif data_set_id == 3:
-        # MNIST
-        train_dataset_mean_std = datasets.MNIST(
-            root="./data", train=True, download=True, transform=transforms.ToTensor()
-        )
+      # MNIST
+      train_dataset_mean_std = datasets.MNIST(
+        root="./data", train=True, download=True, transform=transforms.ToTensor()
+      )
 
-        mean, std = data_mean_std_greyscale(train_dataset_mean_std)
+      mean, std = data_mean_std_greyscale(train_dataset_mean_std)
 
-        transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize(mean, std)]
-        )
+      train_transform = transforms.Compose([
+        transforms.RandomRotation(10),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
 
-        train_dataset = datasets.MNIST(root="data", train=True, transform=transform)
+      test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
 
-        test_dataset = datasets.MNIST(root="data", train=False, transform=transform)
+      train_dataset = datasets.MNIST(root="data", train=True, transform=train_transform)
+      test_dataset = datasets.MNIST(root="data", train=False, transform=test_transform)
 
     else:
-        raise ValueError("Dataset ID not recognised")
+      raise ValueError("Dataset ID not recognised")
+
 
     print_section("Train Dataset Mean and STD")
 
@@ -186,14 +208,14 @@ if __name__ == "__main__":
     num_classes = len(set(targets))
 
     fc_hidden_size = 128
-    fc_dropout_rate = 0.25
+    fc_dropout_rate = 0.5
     epsilon = 1e-10
     eps = 1e-3
     clip_factor =  0.01
     kernel_size = 3
     stride = 1
     padding = 1
-    dropout_rate = 0.25
+    dropout_rate = 0.5
     learning_rate = 1e-3
     loss_func = nn.CrossEntropyLoss()
 
@@ -211,7 +233,8 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        # optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 2:
         model = model_2(
@@ -224,7 +247,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 3:
         model = model_3(
@@ -236,7 +259,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 0:
         model = model_0(
@@ -248,7 +271,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 4:
         model = model_4(
@@ -261,7 +284,7 @@ if __name__ == "__main__":
             fc_dropout_rate,
             num_layers,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 5:
         model = model_5(
@@ -274,7 +297,7 @@ if __name__ == "__main__":
             fc_dropout_rate,
             num_layers,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 6:
         model = baseline_model_1(
@@ -286,7 +309,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 7:
         model = baseline_model_2(
@@ -298,7 +321,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 8:
         model = baseline_model_3(
@@ -310,7 +333,7 @@ if __name__ == "__main__":
             number_classes,
             fc_dropout_rate,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 9:
         model = baseline_model_4(
@@ -323,7 +346,7 @@ if __name__ == "__main__":
             fc_dropout_rate,
             num_layers,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 10:
         model = baseline_model_5(
@@ -336,7 +359,7 @@ if __name__ == "__main__":
             fc_dropout_rate,
             num_layers,
         )
-        optimizer = optim.Adam(model.parameters(),lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     else:
         print("Please input a valid model ID")
@@ -344,9 +367,9 @@ model_name_str = os.path.splitext(config_filename)[0]
 print(model)
 
 
-# print_section("Training")
+print_section("Training")
 
-# train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir='results', params_subdir='model_parameters',min_epochs=5)
+train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir='results', params_subdir='model_parameters')
 
 # print_section("Testing")
 
@@ -386,7 +409,7 @@ print(model)
 
 # run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
 
-print_section("Feature Maps Visualization")
-save_feature_maps_from_model(model, train_loader, mean, std, device, model_name=model_name_str, output_base_dir="results/feature_maps", num_maps=16)
+# print_section("Feature Maps Visualization")
+# save_feature_maps_from_model(model, train_loader, mean, std, device, model_name=model_name_str, output_base_dir="results/feature_maps", num_maps=16)
 
 
