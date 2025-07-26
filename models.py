@@ -7,6 +7,10 @@ class model_1(nn.Module):
         self,
         in_channels,
         out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
         image_height,
         image_width,
         fc_hidden_size,
@@ -18,6 +22,7 @@ class model_1(nn.Module):
         self.pi_conv_layers = ProductUnits(in_channels, out_channels)
         self.bn_prod = nn.BatchNorm2d(out_channels)
         self.dropout = nn.Dropout(dropout_rate)
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
         
 
         with torch.no_grad():
@@ -27,6 +32,7 @@ class model_1(nn.Module):
           x = F.relu(x)
           x = F.max_pool2d(x, 2)  
           x = self.dropout(x)
+          x =  self.global_pool(x)
           fc_input_size = x.view(1, -1).size(1) 
       
         self.mlp = MLP(
@@ -42,6 +48,7 @@ class model_1(nn.Module):
       x = F.relu(x)
       x = F.max_pool2d(x, 2)
       x = self.dropout(x)
+      x =  self.global_pool(x)
       x_flat  = x.reshape(x.size(0), -1)
       x_out  = self.mlp(x_flat)
       output = F.log_softmax(x_out, dim=1)
@@ -57,9 +64,12 @@ class model_2(nn.Module):
         self,
         in_channels,
         out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
         image_height,
         image_width,
-        dropout_rate,
         fc_hidden_size,
         number_classes,
         fc_dropout_rate,
@@ -76,6 +86,7 @@ class model_2(nn.Module):
         self.dropout = nn.Dropout2d(dropout_rate)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.bn2 = nn.BatchNorm2d(out_channels * 2)
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
         
 
         with torch.no_grad():
@@ -90,6 +101,7 @@ class model_2(nn.Module):
           x = F.relu(x)
           x = F.max_pool2d(x, 2)
           x = self.dropout(x) 
+          x =  self.global_pool(x)
           fc_input_size = x.view(1, -1).size(1) 
 
         self.mlp = MLP(
@@ -110,7 +122,8 @@ class model_2(nn.Module):
       pi_cov2 = F.relu(pi_cov2)
       pi_cov2 = F.max_pool2d(pi_cov2, 2)
       pi_cov2 = self.dropout(pi_cov2) 
-      x_flat = pi_cov2.reshape(pi_cov2.size(0), -1)
+      pooled =  self.global_pool(pi_cov2)
+      x_flat = pooled.reshape(pooled.size(0), -1)
       x_out = self.mlp(x_flat)
       output = F.log_softmax(x_out, dim=1)
       if return_feature_maps:
@@ -125,6 +138,10 @@ class model_3(nn.Module):
         self,
         in_channels,
         out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
         image_height,
         image_width,
         fc_hidden_size,
@@ -139,6 +156,7 @@ class model_3(nn.Module):
         self.pi_conv_layers2 = ProductUnits(out_channels, out_channels * 2)
         self.dropout = nn.Dropout2d(dropout_rate)
         self.bn = nn.BatchNorm2d(out_channels*2)
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
         
 
         with torch.no_grad():
@@ -173,6 +191,10 @@ class model_0(nn.Module):
         self,
         in_channels,
         out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
         image_height,
         image_width,
         fc_hidden_size,
@@ -180,21 +202,16 @@ class model_0(nn.Module):
         fc_dropout_rate,
     ):
         super(model_0, self).__init__()
-
-          
+  
         self.pi_conv_layers1 = ProductUnits(in_channels, out_channels )
 
         self.conv_layers1 = StandardConv2D(
-             out_channels, out_channels*2
+             out_channels, out_channels*2, kernel_size, stride, padding, dropout_rate
         )
-
-        
-      
 
         self.dropout = nn.Dropout2d(dropout_rate)
         self.bn = nn.BatchNorm2d(out_channels)
-        
-        
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width) 
             x = self.pi_conv_layers1(dummy_input)
@@ -203,6 +220,7 @@ class model_0(nn.Module):
             x = F.max_pool2d(x, 2)
             x = self.dropout(x)
             x = self.conv_layers1(x)
+            x =  self.global_pool(x)
             fc_input_size = x.view(1, -1).size(1) 
       
         self.mlp = MLP(
@@ -218,8 +236,9 @@ class model_0(nn.Module):
         pi_conv= F.relu(pi_conv)
         pi_conv = F.max_pool2d(pi_conv, 2)
         pi_conv = self.dropout(pi_conv)
-        conv = self.conv_layers1(pi_conv)
-        x_flat = conv.reshape(conv.size(0), -1)
+        conv = self.conv_layers1(pi_conv)     
+        pooled  = self.global_pool(conv)
+        x_flat = pooled.reshape(pooled .size(0), -1)
         x_out = self.mlp(x_flat)
         output = F.log_softmax(x_out, dim=1)
         if return_feature_maps:
@@ -232,6 +251,10 @@ class model_4(nn.Module):
         self,
         in_channels,
         out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
         image_height,
         image_width,
         fc_hidden_size,
@@ -246,6 +269,7 @@ class model_4(nn.Module):
             num_layers=num_layers,
             initial_out_channels=out_channels,
         )
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
 
         output_channels_concat = out_channels * (2 ** (num_layers - 1)) * 2
 
@@ -253,10 +277,10 @@ class model_4(nn.Module):
         with torch.no_grad():
           dummy_input = torch.randn(1, in_channels, image_height, image_width)
           x = self.concat_conv_product(dummy_input)
-          output_shape = x.shape  # <- fixed line
+          output_shape = x.shape 
 
 
-        fc_input_size = output_shape[1] * output_shape[2] * output_shape[3]
+        fc_input_size = output_shape[1]  
 
         self.mlp = MLP(
             fc_input_size=fc_input_size,
@@ -267,9 +291,10 @@ class model_4(nn.Module):
 
     def forward(self, x):
         x = self.concat_conv_product(x)
-        x = x.reshape(x.size(0), -1)
-        x = self.mlp(x)
-        return F.log_softmax(x, dim=1)
+        pooled  = self.global_pool(x)
+        x_flat = pooled.reshape(pooled.size(0), -1)
+        out = self.mlp(x_flat)
+        return F.log_softmax(out, dim=1)
 
 
 class model_5(nn.Module):
@@ -277,6 +302,10 @@ class model_5(nn.Module):
         self,
         in_channels,
         out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
         image_height,
         image_width,
         fc_hidden_size,
@@ -293,12 +322,13 @@ class model_5(nn.Module):
           num_layers=num_layers, 
           initial_out_channels=out_channels,
         )
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
 
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
             output_shape = self.concat_conv_product(dummy_input).shape
 
-        fc_input_size = output_shape[1] * output_shape[2] * output_shape[3]
+        fc_input_size = output_shape[1]  
 
         self.mlp = MLP(
             fc_input_size=fc_input_size,
@@ -309,6 +339,7 @@ class model_5(nn.Module):
 
     def forward(self, x):
         x = self.concat_conv_product(x)
-        x = x.reshape(x.size(0), -1)
-        x = self.mlp(x)
-        return F.log_softmax(x, dim=1)
+        pooled  = self.global_pool(x)
+        x_flat = pooled.reshape(pooled.size(0), -1)
+        out = self.mlp(x_flat)
+        return F.log_softmax(out, dim=1)

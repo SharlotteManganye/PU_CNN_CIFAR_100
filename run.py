@@ -200,7 +200,7 @@ if __name__ == "__main__":
     # model
 
     in_channels =  train_dataset[0][0].shape[0]
-    out_channels = 32
+    out_channels = 16
     kernel_size = 3
     image_height = train_dataset[0][0].shape[1]
     image_width = train_dataset[0][0].shape[2]
@@ -208,14 +208,14 @@ if __name__ == "__main__":
     num_classes = len(set(targets))
 
     fc_hidden_size = 128
-    fc_dropout_rate = 0.5
+    fc_dropout_rate = 0.25
     epsilon = 1e-10
     eps = 1e-3
     clip_factor =  0.01
     kernel_size = 3
     stride = 1
     padding = 1
-    dropout_rate = 0.5
+    dropout_rate = 0.25
     learning_rate = 1e-3
     loss_func = nn.CrossEntropyLoss()
 
@@ -225,139 +225,183 @@ if __name__ == "__main__":
 
     if model_id == 1:
         model = model_1(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
-        # optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
     elif model_id == 2:
         model = model_2(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            dropout_rate,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 3:
         model = model_3(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 0:
         model = model_0(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 4:
         model = model_4(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
-            num_layers,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        num_layers,
+
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 5:
         model = model_5(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
-            num_layers,
+         in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        num_layers,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 6:
         model = baseline_model_1(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 7:
         model = baseline_model_2(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 8:
         model = baseline_model_3(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        # fc_input_size,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 9:
         model = baseline_model_4(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
-            num_layers,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        num_layers,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
     elif model_id == 10:
         model = baseline_model_5(
-            in_channels,
-            out_channels,
-            image_height,
-            image_width,
-            fc_hidden_size,
-            number_classes,
-            fc_dropout_rate,
-            num_layers,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        num_layers,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
 
@@ -367,9 +411,9 @@ model_name_str = os.path.splitext(config_filename)[0]
 print(model)
 
 
-print_section("Training")
+# print_section("Training")
 
-train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir='results', params_subdir='model_parameters')
+# train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader=val_loader, base_results_dir='results', params_subdir='model_parameters')
 
 # print_section("Testing")
 
@@ -383,26 +427,32 @@ train(model, train_loader, optimizer, loss_func, epochs, device, config_filename
 
 # print_section("Hyperparameter Search")
 
-# # Call the hyperparameter search function from the new file
-# run_hyperparameter_search(
-#         model_id=model_id,
-#         number_channels=number_channels,
-#         number_classes=number_classes,
-#         image_height=image_height,
-#         image_width=image_width,
-#         out_channels=out_channels,
-#         fc_hidden_size=fc_hidden_size,
-#         fc_dropout_rate=fc_dropout_rate,
-#         num_layers=num_layers,
-#         epochs=epochs,
-#         val_ratio=val_ratio,
-#         seed=seed,
-#         device=device,
-#         loss_func=loss_func,
-#         train_dataset=train_dataset,
-#         config_filename=config_filename,
-#         base_results_dir= 'results'
-#     )
+# Call the hyperparameter search function from the new file
+run_hyperparameter_search(
+        model_id=model_id,
+        number_channels=number_channels,
+        number_classes=number_classes,
+        image_height=image_height,
+        image_width=image_width,
+        in_channels=in_channels,
+        out_channels=out_channels,
+        fc_hidden_size=fc_hidden_size,
+        fc_dropout_rate=fc_dropout_rate,
+        num_layers=num_layers,
+        epochs=epochs,
+        val_ratio=val_ratio,
+        seed=seed,
+        device=device,
+        loss_func=loss_func,
+        train_dataset=train_dataset,
+        config_filename=config_filename,
+        base_results_dir= 'results',
+        kernel_size=kernel_size,
+        stride=stride,
+        padding=padding,
+        dropout_rate=dropout_rate,
+        learning_rate=learning_rate
+    )
 
 
 # print_section("Cross Validition")

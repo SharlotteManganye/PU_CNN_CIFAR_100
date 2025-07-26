@@ -11,15 +11,16 @@ data:
 model:
   model_id: 6
   number_channels: 3
-  out_channels: 32
+  out_channels: 16
   number_classes: 10
   num_layers : 1
 
 training:
   batch_size: 32
-  epochs: 150
+  epochs: 10
   learning_rate: 6e-05
   epsilon: 1e-10
   grad_epsilon: 1e-3
   clip_factor: 0.01
   Kfolds: 5
+  fc_dropout_rate:  0.25

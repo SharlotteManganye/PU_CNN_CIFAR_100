@@ -4,10 +4,11 @@ import torch.nn.functional as F
 import math
 
 epsilon = 1e-10
-kernel_size = 1
+kernel_size = 3
 stride = 1
 padding = 1
 dropout_rate = 0.25
+fc_dropout_rate=0.25
 num_layers = 1
 
 
@@ -38,19 +39,13 @@ class MLP(nn.Module):
 
     def forward(self, x):
         x = x.view(x.size(0), -1)
-        # x_fc = self.fc_model(x)
-        #   if return_feature_maps:
-        #     return output, y_conv, z_conv, conv2_out #return feature maps
-        # else:
-        #     return output
         return self.fc_model(x)
 
 
 
 class StandardConv2D(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1, dropout_rate=0.5):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, padding, dropout_rate):
         super().__init__()
-        # Ensure all values are integers
         kernel_size = int(kernel_size)
         stride = int(stride)
         padding = int(padding)
@@ -179,7 +174,7 @@ class ProductUnits(nn.Module):
 
 class ConcatConv2DProductUnits(nn.Module):
     def __init__(
-        self, in_channels, num_layers, initial_out_channels=16, kernel_size=3, dropout_rate=0.5
+        self, in_channels, num_layers, initial_out_channels=16, kernel_size=3, dropout_rate=0.25
     ):
         super(ConcatConv2DProductUnits, self).__init__()
         self.kernel_size = kernel_size

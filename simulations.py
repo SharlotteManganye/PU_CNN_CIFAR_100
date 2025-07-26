@@ -125,28 +125,188 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
         print(f"Epoch metrics saved to {metrics_path}")
 
 def select_model(model_id, in_channels, height, width, fc_hidden_size, num_classes, fc_dropout, dropout, num_layers):
-    if model_id == 0:
-        return model_0(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout)
-    elif model_id == 1:
-        return model_1(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout)
+
+    if model_id == 1:
+        model = model_1(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     elif model_id == 2:
-        return model_2(in_channels, 32, height, width, dropout, fc_hidden_size, num_classes, fc_dropout)
+        model = model_2(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     elif model_id == 3:
-        return model_3(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout)
+        model = model_3(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
+    elif model_id == 0:
+        model = model_0(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     elif model_id == 4:
-        return model_4(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout, num_layers)
+        model = model_4(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        num_layers,
+
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     elif model_id == 5:
-        return model_5(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout, num_layers)
+        model = model_5(
+         in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        num_layers,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     elif model_id == 6:
-        return baseline_model_1(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout)
+        model = baseline_model_1(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     elif model_id == 7:
-        return baseline_model_2(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout)
+        model = baseline_model_2(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     elif model_id == 8:
-        return baseline_model_3(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout)
+        model = baseline_model_3(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     elif model_id == 9:
-        return baseline_model_4(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout, num_layers)
+        model = baseline_model_4(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        num_layers,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     elif model_id == 10:
-        return baseline_model_5(in_channels, 32, height, width, fc_hidden_size, num_classes, fc_dropout, num_layers)
+        model = baseline_model_5(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dropout_rate,
+        image_height,
+        image_width,
+        fc_hidden_size,
+        number_classes,
+        fc_dropout_rate,
+        num_layers,
+        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+
     else:
-        raise ValueError("Invalid model ID")
+        print("Please input a valid model ID")
 
