@@ -430,12 +430,11 @@ print(model)
 # Call the hyperparameter search function from the new file
 run_hyperparameter_search(
         model_id=model_id,
-        number_channels=number_channels,
+        in_channels=number_channels,
+        out_channels=out_channels,
         number_classes=number_classes,
         image_height=image_height,
         image_width=image_width,
-        in_channels=in_channels,
-        out_channels=out_channels,
         fc_hidden_size=fc_hidden_size,
         fc_dropout_rate=fc_dropout_rate,
         num_layers=num_layers,
@@ -445,13 +444,11 @@ run_hyperparameter_search(
         device=device,
         loss_func=loss_func,
         train_dataset=train_dataset,
-        config_filename=config_filename,
         base_results_dir= 'results',
         kernel_size=kernel_size,
         stride=stride,
         padding=padding,
-        dropout_rate=dropout_rate,
-        learning_rate=learning_rate
+        dropout_rate=dropout_rate
     )
 
 
