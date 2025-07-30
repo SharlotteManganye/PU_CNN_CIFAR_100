@@ -5,6 +5,7 @@ import csv
 import pytz
 from torch.utils.data import Subset
 import random
+import itertools
 from datetime import datetime
 from functools import partial
 import pyhopper as hp
@@ -91,13 +92,13 @@ def objective(params, fixed_args):
 
     model = model_constructors[model_id](*model_args).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=current_learning_rate, weight_decay=1e-5)
-
+    num_workers = min(4, os.cpu_count())
     train_dataset_subset = get_subset(train_dataset, fraction=0.2, seed=seed)
     train_loader, val_loader = get_train_val_loaders(
         train_dataset_subset,
         batch_size=current_batch_size,
         val_ratio=val_ratio,
-        num_workers=4,
+        num_workers=num_workers,
         seed=seed
     )
 
@@ -122,55 +123,67 @@ def objective(params, fixed_args):
 
     
 
-def run_hyperparameter_search(
-          model_id, in_channels, out_channels, kernel_size, stride, padding,
-          dropout_rate, image_height, image_width, fc_hidden_size, number_classes,
-          fc_dropout_rate, num_layers, train_dataset, val_ratio, seed, device,
-          loss_func, epochs, base_results_dir
-    ):
-    fixed_args = (
-          model_id, in_channels, out_channels, kernel_size, stride, padding,
-          dropout_rate, image_height, image_width, fc_hidden_size, number_classes,
-          fc_dropout_rate, num_layers, train_dataset, val_ratio, seed, device,
-          loss_func, epochs, base_results_dir
-    )
 
-    search_space = hp.Search({
-        "batch_size": hp.int(32, 128, power_of=2),
-        "lr": hp.float(1e-5, 1e-3, "0.1g"),
-    })
 
-    print("Starting Hyperparameter Search...")
-    results = search_space.run(
-        partial(objective, fixed_args=fixed_args),
-        "minimize",
-        "4h",
-        n_jobs=4
-    )
-    print("Hyperparameter Search Completed.")
+def run_hyperparameter_search_grid(
+    model_id, in_channels, out_channels, kernel_size, stride, padding,
+    dropout_rate, image_height, image_width, fc_hidden_size, number_classes,
+    fc_dropout_rate, num_layers, train_dataset, val_ratio, seed, device,
+    loss_func, epochs, base_results_dir, config_filename=None
+):
+    # Define grid search space
+    batch_sizes = [32, 64, 128]
+    learning_rates = [1e-5, 1e-4, 1e-3]
 
-    if hasattr(results, 'best_f') and results.best_f is not None:
-        best_params = results.best_params
-        best_loss = results.best_f
+    param_grid = list(itertools.product(batch_sizes, learning_rates))
 
-        sa_timezone = pytz.timezone('Africa/Johannesburg')
-        current_time_sast = datetime.now(sa_timezone)
-        current_timestamp = current_time_sast.strftime("%Y%m%d_%H%M%S")
+    best_val_loss = float("inf")
+    best_params = None
 
-        model_dir_name = f"model_{model_id}"
-        optimization_results_dir = os.path.join(base_results_dir, "pyhopper", model_dir_name)
-        os.makedirs(optimization_results_dir, exist_ok=True)
+    sa_timezone = pytz.timezone('Africa/Johannesburg')
+    current_time_sast = datetime.now(sa_timezone)
+    current_timestamp = current_time_sast.strftime("%Y%m%d_%H%M%S")
 
+    model_dir_name = f"model_{model_id}"
+    optimization_results_dir = os.path.join(base_results_dir, "gridsearch", model_dir_name)
+    os.makedirs(optimization_results_dir, exist_ok=True)
+    log_path = os.path.join(optimization_results_dir, "intermediate_results.csv")
+
+    for batch_size, lr in param_grid:
+        params = {"batch_size": batch_size, "lr": lr}
+        print(f"\n--- Grid Search Trial ---")
+        print(f"Batch Size: {batch_size}, Learning Rate: {lr}")
+
+        fixed_args = (
+            model_id, in_channels, out_channels, kernel_size, stride, padding,
+            dropout_rate, image_height, image_width, fc_hidden_size, number_classes,
+            fc_dropout_rate, num_layers, train_dataset, val_ratio, seed, device,
+            loss_func, epochs, base_results_dir
+        )
+
+        try:
+            val_loss = objective(params, fixed_args)
+        except Exception as e:
+            print(f"Trial failed for params {params}: {e}")
+            continue
+
+        log_trial_result_csv(log_path, params, val_loss)
+
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_params = params
+
+    if best_params:
         optimization_filename = os.path.join(
             optimization_results_dir,
-            f"model{model_id}_optimization.json"
+            f"model{model_id}_gridsearch_optimization.json"
         )
 
         data_to_save = {
             "model_id": model_id,
             "config_file_used_for_search": config_filename,
             "optimal_parameters": best_params,
-            "best_validation_loss": best_loss
+            "best_validation_loss": best_val_loss
         }
 
         try:
@@ -180,6 +193,4 @@ def run_hyperparameter_search(
         except Exception as e:
             print(f"Error saving optimal parameters for Model {model_id}: {e}")
     else:
-        print("No optimal parameters found or search did not return expected results.")
-        print(f"Debug: Results object: {results}")
-
+        print("Grid search completed, but no valid trial succeeded.")

@@ -15,6 +15,7 @@ from models import *
 from baseline_models import *
 from train import *
 from test import *
+from grid_search import *
 from hyperparameter_search import run_hyperparameter_search
 from cross_validation import *
 from visualize_feature_maps import * 
@@ -427,29 +428,57 @@ print(model)
 
 # print_section("Hyperparameter Search")
 
-# Call the hyperparameter search function from the new file
-run_hyperparameter_search(
-        model_id=model_id,
-        in_channels=number_channels,
-        out_channels=out_channels,
-        number_classes=number_classes,
-        image_height=image_height,
-        image_width=image_width,
-        fc_hidden_size=fc_hidden_size,
-        fc_dropout_rate=fc_dropout_rate,
-        num_layers=num_layers,
-        epochs=epochs,
-        val_ratio=val_ratio,
-        seed=seed,
-        device=device,
-        loss_func=loss_func,
-        train_dataset=train_dataset,
-        base_results_dir= 'results',
-        kernel_size=kernel_size,
-        stride=stride,
-        padding=padding,
-        dropout_rate=dropout_rate
-    )
+
+# run_hyperparameter_search(
+#         model_id=model_id,
+#         in_channels=number_channels,
+#         out_channels=out_channels,
+#         number_classes=number_classes,
+#         image_height=image_height,
+#         image_width=image_width,
+#         fc_hidden_size=fc_hidden_size,
+#         fc_dropout_rate=fc_dropout_rate,
+#         num_layers=num_layers,
+#         epochs=epochs,
+#         val_ratio=val_ratio,
+#         seed=seed,
+#         device=device,
+#         loss_func=loss_func,
+#         train_dataset=train_dataset,
+#         base_results_dir= 'results',
+#         kernel_size=kernel_size,
+#         stride=stride,
+#         padding=padding,
+#         dropout_rate=dropout_rate
+#     )
+
+
+
+print_section("Grid_Search")
+
+run_hyperparameter_search_grid(
+    model_id=model_id, 
+    in_channels=number_channels,
+    out_channels=out_channels,
+    kernel_size=kernel_size, 
+    stride=stride, 
+    padding=padding,
+    dropout_rate=dropout_rate,
+    image_height=image_height,
+    image_width=image_width, 
+    fc_hidden_size=fc_hidden_size, 
+    number_classes=number_classes,
+    fc_dropout_rate=fc_dropout_rate, 
+    num_layers=num_layers, 
+    train_dataset=train_dataset, 
+    val_ratio=val_ratio, 
+    seed=seed, 
+    device=device,
+    loss_func=loss_func, 
+    epochs=epochs, 
+    base_results_dir='results', 
+    config_filename=config_filename
+)
 
 
 # print_section("Cross Validition")
