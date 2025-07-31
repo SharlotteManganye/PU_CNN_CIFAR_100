@@ -23,4 +23,8 @@ training:
   grad_epsilon: 1e-3
   clip_factor: 0.01
   Kfolds: 5
+  fc_hidden_size: 0.25
+  fc_hidden_size: 128
+  fc_dropout_rate:  0.25
+  dropout_rate:  0.25
 

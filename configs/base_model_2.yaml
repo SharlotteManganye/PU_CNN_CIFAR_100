@@ -17,10 +17,13 @@ model:
 
 training:
   batch_size: 32
-  epochs: 10
+  epochs: 150
   learning_rate: 0.0001
   epsilon: 1e-10
   grad_epsilon: 1e-3
   clip_factor: 0.01
   Kfolds: 5
+  fc_hidden_size: 0.25
+  fc_hidden_size: 128
   fc_dropout_rate:  0.25
+  dropout_rate:  0.25

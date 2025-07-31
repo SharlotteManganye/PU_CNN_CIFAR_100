@@ -61,6 +61,7 @@ if __name__ == "__main__":
     number_channels = model["number_channels"]
     number_classes = model["number_classes"]
     num_layers = model["num_layers"]
+    out_channels = model["out_channels"]
 
     # Training variables
     batch_size = training["batch_size"]
@@ -69,6 +70,9 @@ if __name__ == "__main__":
     epsilon = training["epsilon"]
     grad_epsilon = training["grad_epsilon"]
     clip_factor = training["clip_factor"]
+    dropout_rate = training["dropout_rate"]
+    fc_dropout_rate = training["fc_dropout_rate"]
+    fc_hidden_size = training["fc_hidden_size"]
 
     Kfolds = training["Kfolds"]
     # loss_func = training["loss_func"]
@@ -208,16 +212,16 @@ if __name__ == "__main__":
     targets = [label for _, label in train_dataset]
     num_classes = len(set(targets))
 
-    fc_hidden_size = 128
-    fc_dropout_rate = 0.25
-    epsilon = 1e-10
+    # fc_hidden_size = 128
+    # fc_dropout_rate = 0.25
+    # epsilon = 1e-10
+    # clip_factor =  0.01
     eps = 1e-3
-    clip_factor =  0.01
     kernel_size = 3
     stride = 1
     padding = 1
-    dropout_rate = 0.25
-    learning_rate = 1e-3
+    # dropout_rate = 0.25
+    # learning_rate = 1e-3
     loss_func = nn.CrossEntropyLoss()
 
     
@@ -421,9 +425,9 @@ print(model)
 # test_loss, test_acc = test(model, test_loader, loss_func, device, config_filename, base_results_dir='results/test', save_results=True, epoch=epochs)
 
 
-# print_section("SIMULATIONS")
+print_section("SIMULATIONS")
 
-# run_simulations(config_filename)
+run_simulations(config_filename)
 
 
 # print_section("Hyperparameter Search")
@@ -454,31 +458,31 @@ print(model)
 
 
 
-print_section("Grid_Search")
+# print_section("Grid_Search")
 
-run_hyperparameter_search_grid(
-    model_id=model_id, 
-    in_channels=number_channels,
-    out_channels=out_channels,
-    kernel_size=kernel_size, 
-    stride=stride, 
-    padding=padding,
-    dropout_rate=dropout_rate,
-    image_height=image_height,
-    image_width=image_width, 
-    fc_hidden_size=fc_hidden_size, 
-    number_classes=number_classes,
-    fc_dropout_rate=fc_dropout_rate, 
-    num_layers=num_layers, 
-    train_dataset=train_dataset, 
-    val_ratio=val_ratio, 
-    seed=seed, 
-    device=device,
-    loss_func=loss_func, 
-    epochs=epochs, 
-    base_results_dir='results', 
-    config_filename=config_filename
-)
+# run_hyperparameter_search_grid(
+#     model_id=model_id, 
+#     in_channels=number_channels,
+#     out_channels=out_channels,
+#     kernel_size=kernel_size, 
+#     stride=stride, 
+#     padding=padding,
+#     dropout_rate=dropout_rate,
+#     image_height=image_height,
+#     image_width=image_width, 
+#     fc_hidden_size=fc_hidden_size, 
+#     number_classes=number_classes,
+#     fc_dropout_rate=fc_dropout_rate, 
+#     num_layers=num_layers, 
+#     train_dataset=train_dataset, 
+#     val_ratio=val_ratio, 
+#     seed=seed, 
+#     device=device,
+#     loss_func=loss_func, 
+#     epochs=epochs, 
+#     base_results_dir='results', 
+#     config_filename=config_filename
+# )
 
 
 # print_section("Cross Validition")
