@@ -20,6 +20,7 @@ from hyperparameter_search import run_hyperparameter_search
 from cross_validation import *
 from visualize_feature_maps import * 
 from simulations import *
+from ResNet19 import *
 
 if __name__ == "__main__":
     # Accept config file as command parameter
