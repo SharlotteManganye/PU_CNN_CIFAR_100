@@ -345,17 +345,5 @@ class model_5(nn.Module):
         return F.log_softmax(out, dim=1)
 
   
-class model_00(nn.Module):
-    def __init__( 
-        self,
-        num_classes=out_channels,
-        input_channels=in_channels,
-        activation_hook=activation_logger
-        ):
-          super(model_00, self).__init__()
-          def ResNet18(num_classes=1000):
-    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes)
-
-
 
 
