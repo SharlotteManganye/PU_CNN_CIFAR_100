@@ -124,6 +124,11 @@ if __name__ == "__main__":
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
       ])
+      # train_transform = transforms.Compose([transforms.RandomHorizontalFlip(),
+      #                  transforms.ToTensor(),
+      #                  transforms.RandomErasing(),
+      #                  transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]
+      #                  )
 
       test_transform = transforms.Compose([
         transforms.ToTensor(),
@@ -206,7 +211,6 @@ if __name__ == "__main__":
 
     in_channels =  train_dataset[0][0].shape[0]
     out_channels = 16
-    kernel_size = 3
     image_height = train_dataset[0][0].shape[1]
     image_width = train_dataset[0][0].shape[2]
     targets = [label for _, label in train_dataset]
@@ -220,6 +224,7 @@ if __name__ == "__main__":
     kernel_size = 3
     stride = 1
     padding = 1
+    weight_decay =1e-5
     # dropout_rate = 0.25
     # learning_rate = 1e-3
     loss_func = nn.CrossEntropyLoss()
@@ -242,7 +247,7 @@ if __name__ == "__main__":
         number_classes,
         fc_dropout_rate,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 2:
         model = model_2(
@@ -258,7 +263,7 @@ if __name__ == "__main__":
         number_classes,
         fc_dropout_rate,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 3:
         model = model_3(
@@ -274,7 +279,7 @@ if __name__ == "__main__":
         number_classes,
         fc_dropout_rate,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 0:
         model = model_0(
@@ -290,7 +295,7 @@ if __name__ == "__main__":
         number_classes,
         fc_dropout_rate,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 4:
         model = model_4(
@@ -308,7 +313,7 @@ if __name__ == "__main__":
         num_layers,
 
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 5:
         model = model_5(
@@ -325,7 +330,7 @@ if __name__ == "__main__":
         fc_dropout_rate,
         num_layers,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 6:
         model = baseline_model_1(
@@ -341,7 +346,7 @@ if __name__ == "__main__":
         number_classes,
         fc_dropout_rate,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 7:
         model = baseline_model_2(
@@ -357,7 +362,7 @@ if __name__ == "__main__":
         number_classes,
         fc_dropout_rate,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 8:
         model = baseline_model_3(
@@ -374,7 +379,7 @@ if __name__ == "__main__":
         number_classes,
         fc_dropout_rate,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 9:
         model = baseline_model_4(
@@ -391,7 +396,7 @@ if __name__ == "__main__":
         fc_dropout_rate,
         num_layers,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 10:
         model = baseline_model_5(
@@ -408,7 +413,7 @@ if __name__ == "__main__":
         fc_dropout_rate,
         num_layers,
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     else:
         print("Please input a valid model ID")

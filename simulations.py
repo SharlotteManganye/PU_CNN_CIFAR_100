@@ -123,10 +123,30 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
 
     train_dataset_mean_std = dataset(root="./data", train=True, download=True, transform=transforms.ToTensor())
     mean, std = mean_std_func(train_dataset_mean_std)
-    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, std)])
+    # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, std)])
+    # Data transforms (normalization & data augmentation)
+    # stats = ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+    # train_transform = transforms.Compose([transforms.RandomCrop(32, padding=4),   # crop with padding
+    #                                       transforms.RandomHorizontalFlip(),      # flip horizontally
+    #                                       transforms.ColorJitter(                 # slightly distort color
+    #                                           brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+    #                                       transforms.RandomRotation(15),          # small rotations
+    #                                       transforms.ToTensor(),                  # convert to tensor
+    #                                       transforms.Normalize((0.4914, 0.4822, 0.4465),  # normalize
+    #                                                           (0.2023, 0.1994, 0.2010)),
+    #                                   ])
+    train_transform = transforms.Compose([transforms.RandomHorizontalFlip(),
+                       transforms.ToTensor(),
+                       transforms.RandomErasing(),
+                       transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]
+                       )
 
-    full_train_dataset = dataset(root="data", train=True, transform=transform)
-    test_dataset = dataset(root="data", train=False, transform=transform)
+    test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
+    full_train_dataset = dataset(root="data", train=True, transform=train_transform)
+    test_dataset = dataset(root="data", train=False, transform=test_transform)
 
     # Extract image dimensions from one sample
     in_channels = full_train_dataset[0][0].shape[0]
