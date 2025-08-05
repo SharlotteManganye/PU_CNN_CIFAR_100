@@ -4,7 +4,7 @@ program:
   gpu: False
 
 data:
-  data_set_id: 1  # 1: CIFAR 10, 2: CIFAR 100, 3: MNIST
+  data_set_id: 3  # 1: CIFAR 10, 2: CIFAR 100, 3: MNIST
   test_ratio: 0.2
   val_ratio: 0.2
 

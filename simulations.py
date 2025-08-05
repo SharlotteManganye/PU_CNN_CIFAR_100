@@ -138,7 +138,9 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
     train_transform = transforms.Compose([transforms.RandomHorizontalFlip(),
                        transforms.ToTensor(),
                        transforms.RandomErasing(),
-                       transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]
+                      #  transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))] # CI_FAR10 mean and std for RGB
+                       transforms.Normalize((0.1307,), (0.3081,))] # MNIST mean and std for grayscale
+
                        )
 
     test_transform = transforms.Compose([
