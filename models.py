@@ -344,6 +344,42 @@ class model_5(nn.Module):
         out = self.mlp(x_flat)
         return F.log_softmax(out, dim=1)
 
+class model_6(nn.Module):
+    def __init__(self, ResidualBlock, num_classes=10):
+        super(model_6, self).__init__()
+        self.inchannel = 128
+        self.bn_prod = nn.BatchNorm2d(128)
+        self.dropout = nn.Dropout(0.25)
+        self.pi_conv_layers = ProductUnits(3, 128)
+        self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
+        self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)        
+        self.fc = nn.Linear(512, num_classes)
+        
+    def make_layer(self, block, channels, num_blocks, stride):
+        strides = [stride] + [1] * (num_blocks - 1)
+        layers = []
+        for stride in strides:
+            layers.append(block(self.inchannel, channels, stride))
+            self.inchannel = channels
+        return nn.Sequential(*layers)
+    
+    def forward(self, x):
+        out = self.pi_conv_layers(x)
+        out = self.bn_prod(out)
+        out = F.relu(out)
+        out = F.max_pool2d(out, 2)
+        out = self.dropout(out)
+        out = self.layer3(out)
+        out = self.layer4(out)
+        out = F.avg_pool2d(out, 4)
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+        return out
+def ResNet18():
+    return ResNet(ResidualBlock)
+
+
+  
   
 
 

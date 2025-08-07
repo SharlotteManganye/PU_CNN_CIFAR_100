@@ -10,7 +10,10 @@ from datetime import datetime
 from functools import partial
 import pyhopper as hp
 from utils import get_train_val_loaders
-from models import model_0, model_1, model_2, model_3, model_4, model_5
+
+from model_components import ResidualBlock
+
+from models import model_0, model_1, model_2, model_3, model_4, model_5,model_6
 from baseline_models import (
     baseline_model_1, baseline_model_2, baseline_model_3,
     baseline_model_4, baseline_model_5
@@ -75,7 +78,7 @@ def objective(params, fixed_args):
     print(f"Batch Size: {current_batch_size}, Learning Rate: {current_learning_rate}")
 
     model_constructors = {
-        0: model_0, 1: model_1, 2: model_2, 3: model_3, 4: model_4, 5: model_5,
+        0: model_0, 1: model_1, 2: model_2, 3: model_3, 4: model_4, 5: model_5, 11: model_6,
         6: baseline_model_1, 7: baseline_model_2, 8: baseline_model_3,
         9: baseline_model_4, 10: baseline_model_5
     }
@@ -87,8 +90,11 @@ def objective(params, fixed_args):
         in_channels, out_channels, kernel_size, stride, padding, dropout_rate,
         image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate
     ]
-    if model_id in [4, 5, 9, 10]:
-        model_args.append(num_layers)
+    if model_id == 11:
+      model_args = [ResidualBlock, number_classes]  # Adjust as needed
+    elif model_id in [4, 5, 9, 10]:
+      model_args.append(num_layers)
+
 
     model = model_constructors[model_id](*model_args).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=current_learning_rate, weight_decay=1e-5)

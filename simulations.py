@@ -78,6 +78,11 @@ def select_model(model_id, in_channels, out_channels, kernel_size, stride, paddi
                                 dropout_rate, image_height, image_width,
                                 fc_hidden_size, number_classes, fc_dropout_rate, num_layers)
 
+    elif model_id == 11:
+        return model_6( ResidualBlock
+          
+        )
+
     else:
         raise ValueError(f"Invalid model_id: {model_id}")
 

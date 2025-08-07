@@ -20,7 +20,7 @@ from hyperparameter_search import run_hyperparameter_search
 from cross_validation import *
 from visualize_feature_maps import * 
 from simulations import *
-from ResNet18 import *
+
 
 if __name__ == "__main__":
     # Accept config file as command parameter
@@ -414,6 +414,11 @@ if __name__ == "__main__":
         fc_dropout_rate,
         num_layers,
         )
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    
+    elif model_id == 11:
+        model = model_6(ResidualBlock,
+        )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     else:
@@ -431,9 +436,9 @@ print(model)
 # test_loss, test_acc = test(model, test_loader, loss_func, device, config_filename, base_results_dir='results/test', save_results=True, epoch=epochs)
 
 
-print_section("SIMULATIONS")
+# print_section("SIMULATIONS")
 
-run_simulations(config_filename)
+# run_simulations(config_filename)
 
 
 # print_section("Hyperparameter Search")
@@ -464,31 +469,31 @@ run_simulations(config_filename)
 
 
 
-# print_section("Grid_Search")
+print_section("Grid_Search")
 
-# run_hyperparameter_search_grid(
-#     model_id=model_id, 
-#     in_channels=number_channels,
-#     out_channels=out_channels,
-#     kernel_size=kernel_size, 
-#     stride=stride, 
-#     padding=padding,
-#     dropout_rate=dropout_rate,
-#     image_height=image_height,
-#     image_width=image_width, 
-#     fc_hidden_size=fc_hidden_size, 
-#     number_classes=number_classes,
-#     fc_dropout_rate=fc_dropout_rate, 
-#     num_layers=num_layers, 
-#     train_dataset=train_dataset, 
-#     val_ratio=val_ratio, 
-#     seed=seed, 
-#     device=device,
-#     loss_func=loss_func, 
-#     epochs=epochs, 
-#     base_results_dir='results', 
-#     config_filename=config_filename
-# )
+run_hyperparameter_search_grid(
+    model_id=model_id, 
+    in_channels=number_channels,
+    out_channels=out_channels,
+    kernel_size=kernel_size, 
+    stride=stride, 
+    padding=padding,
+    dropout_rate=dropout_rate,
+    image_height=image_height,
+    image_width=image_width, 
+    fc_hidden_size=fc_hidden_size, 
+    number_classes=number_classes,
+    fc_dropout_rate=fc_dropout_rate, 
+    num_layers=num_layers, 
+    train_dataset=train_dataset, 
+    val_ratio=val_ratio, 
+    seed=seed, 
+    device=device,
+    loss_func=loss_func, 
+    epochs=epochs, 
+    base_results_dir='results', 
+    config_filename=config_filename
+)
 
 
 # print_section("Cross Validition")
