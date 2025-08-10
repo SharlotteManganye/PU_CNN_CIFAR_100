@@ -334,52 +334,7 @@ class model_5(nn.Module):
         return output
 
 
-# class model_5(nn.Module):
-#     def __init__(
-#         self,
-#         in_channels,
-#         out_channels,
-#         kernel_size,
-#         stride,
-#         padding,
-#         dropout_rate,
-#         image_height,
-#         image_width,
-#         fc_hidden_size,
-#         number_classes,
-#         fc_dropout_rate,
-#         num_layers,
-#     ):
-#         super(model_5, self).__init__()
 
-#         self.num_layers = num_layers
-
-#         self.concat_conv_product = ConcatConv2DProductUnits(
-#           in_channels=in_channels,
-#           num_layers=num_layers, 
-#           initial_out_channels=out_channels,
-#         )
-#         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
-
-#         with torch.no_grad():
-#             dummy_input = torch.randn(1, in_channels, image_height, image_width)
-#             output_shape = self.concat_conv_product(dummy_input).shape
-
-#         fc_input_size = output_shape[1]  
-
-#         self.mlp = MLP(
-#             fc_input_size=fc_input_size,
-#             fc_hidden_size=fc_hidden_size,
-#             num_classes=number_classes,
-#             fc_dropout_rate=fc_dropout_rate,
-#         )
-
-#     def forward(self, x):
-#         x = self.concat_conv_product(x)
-#         pooled  = self.global_pool(x)
-#         x_flat = pooled.reshape(pooled.size(0), -1)
-#         out = self.mlp(x_flat)
-#         return F.log_softmax(out, dim=1)
 
 class model_6(nn.Module):
     def __init__(self, ResidualBlock, num_classes=10):
@@ -387,7 +342,7 @@ class model_6(nn.Module):
         self.inchannel = 128
         self.bn_prod = nn.BatchNorm2d(128)
         self.dropout = nn.Dropout(0.25)
-        self.pi_conv_layers = ProductUnits(3, 128)
+        self.pi_conv_layers = ProductUnits(3, 128,2)
         self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
         self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)        
         self.fc = nn.Linear(512, num_classes)
