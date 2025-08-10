@@ -11,13 +11,13 @@ data:
 model:
   model_id: 4
   number_channels: 1
-  out_channels: 16
+  out_channels: 32
   number_classes: 10
   num_layers : 1
 
 training:
   batch_size: 64
-  epochs: 150
+  epochs: 10
   learning_rate: 0.001
   epsilon: 1e-8
   grad_epsilon: 1e-3
