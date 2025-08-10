@@ -2,347 +2,384 @@ from model_components import *
 import torch.nn.functional as F
 
 
+
 class model_1(nn.Module):
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
-    ):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate):
         super(model_1, self).__init__()
 
-        self.pi_conv_layers = ProductUnits(in_channels, out_channels)
-        self.bn_prod = nn.BatchNorm2d(out_channels)
-        self.dropout = nn.Dropout(dropout_rate)
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
-        
-
-        with torch.no_grad():
-          dummy_input = torch.randn(1, in_channels, image_height, image_width)
-          x = self.pi_conv_layers(dummy_input)
-          x = self.bn_prod(x)
-          x = F.relu(x)
-          x = F.max_pool2d(x, 2)  
-          x = self.dropout(x)
-          x =  self.global_pool(x)
-          fc_input_size = x.view(1, -1).size(1) 
-      
-        self.mlp = MLP(
-            fc_input_size=fc_input_size,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
+        self.prod_block = nn.Sequential(
+            ProductUnits(in_channels, out_channels,kernel_size, stride=stride),
+            nn.BatchNorm2d(out_channels),
+            # nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
         )
 
+        self.flatten = nn.Flatten()
+        self.fc1 = None  # will initialize later
+        self.fc2 = None  # will initialize later
+        self.fc_dropout_rate = fc_dropout_rate
+        self.number_classes = number_classes
+
     def forward(self, x, return_feature_maps=False):
-      x = self.pi_conv_layers(x)
-      x = self.bn_prod(x)
-      x = F.relu(x)
-      x = F.max_pool2d(x, 2)
-      x = self.dropout(x)
-      x =  self.global_pool(x)
-      x_flat  = x.reshape(x.size(0), -1)
-      x_out  = self.mlp(x_flat)
-      output = F.log_softmax(x_out, dim=1)
-      if return_feature_maps:
-        return output, x
-      else:
+        x = self.prod_block(x)
+        x_flat = self.flatten(x)
+
+        if self.fc1 is None:
+            in_features = x_flat.size(1)
+            self.fc1 = nn.Linear(in_features, 256).to(x.device)
+            self.fc2 = nn.Linear(256, self.number_classes).to(x.device)
+
+        output = F.relu(self.fc1(x_flat))
+        output = F.dropout(output, p=self.fc_dropout_rate, training=self.training)
+        output = self.fc2(output)
+
+        if return_feature_maps:
+            return output, x
         return output
 
+        
 
 
 class model_2(nn.Module):
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
-    ):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate):
         super(model_2, self).__init__()
 
-        self.pi_conv_layers1 = ProductUnits(
-            in_channels, out_channels
+        self.prod_block = nn.Sequential(
+            ProductUnits(in_channels, out_channels,kernel_size, stride=stride),
+            nn.BatchNorm2d(out_channels),
+            # nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
         )
 
-        self.pi_conv_layers2 = ProductUnits(
-            out_channels, out_channels*2
-        )
-        self.dropout = nn.Dropout2d(dropout_rate)
-        self.bn1 = nn.BatchNorm2d(out_channels)
-        self.bn2 = nn.BatchNorm2d(out_channels * 2)
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
-        
-
-        with torch.no_grad():
-          dummy_input = torch.randn(1, in_channels, image_height, image_width)
-          x = self.pi_conv_layers1(dummy_input)
-          x = self.bn1(x)
-          x = F.relu(x)
-          x = F.max_pool2d(x, 2)
-          x = self.dropout(x)
-          x = self.pi_conv_layers2(x)
-          x = self.bn2(x)
-          x = F.relu(x)
-          x = F.max_pool2d(x, 2)
-          x = self.dropout(x) 
-          x =  self.global_pool(x)
-          fc_input_size = x.view(1, -1).size(1) 
-
-        self.mlp = MLP(
-            fc_input_size=fc_input_size,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
+        self.prod_block2 = nn.Sequential(
+            ProductUnits( out_channels, out_channels,kernel_size, stride=stride),
+            nn.BatchNorm2d(out_channels),
+            # nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
         )
 
-    def forward(self, x,return_feature_maps=False):
-      pi_cov = self.pi_conv_layers1(x)
-      pi_cov = self.bn1(pi_cov)
-      pi_cov = F.relu(pi_cov)
-      pi_cov = F.max_pool2d(pi_cov, 2)
-      pi_cov = self.dropout(pi_cov)
-      pi_cov2 = self.pi_conv_layers2(pi_cov)
-      pi_cov2 = self.bn2(pi_cov2)
-      pi_cov2 = F.relu(pi_cov2)
-      pi_cov2 = F.max_pool2d(pi_cov2, 2)
-      pi_cov2 = self.dropout(pi_cov2) 
-      pooled =  self.global_pool(pi_cov2)
-      x_flat = pooled.reshape(pooled.size(0), -1)
-      x_out = self.mlp(x_flat)
-      output = F.log_softmax(x_out, dim=1)
-      if return_feature_maps:
-        return output, pi_cov,pi_cov2
-      else:
+
+        self.flatten = nn.Flatten()
+        self.fc1 = None  # will initialize later
+        self.fc2 = None  # will initialize later
+        self.fc_dropout_rate = fc_dropout_rate
+        self.number_classes = number_classes
+
+    def forward(self, x, return_feature_maps=False):
+        prod1 = self.prod_block(x)  
+        prod2 = self.prod_block2 (prod1)
+        x_flat = self.flatten(x)
+
+        if self.fc1 is None:
+            in_features = x_flat.size(1)
+            self.fc1 = nn.Linear(in_features, 256).to(x.device)
+            self.fc2 = nn.Linear(256, self.number_classes).to(x.device)
+
+        output = F.relu(self.fc1(x_flat))
+        output = F.dropout(output, p=self.fc_dropout_rate, training=self.training)
+        output = self.fc2(output)
+
+        if return_feature_maps:
+            return output, prod1,prod2
         return output
       
 
 
 class model_3(nn.Module):
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
-    ):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate,image_height, image_width):
         super(model_3, self).__init__()
 
-        self.conv_layers1 = StandardConv2D(
-            in_channels, out_channels
+        self.prod_block = nn.Sequential(
+            ProductUnits(in_channels, out_channels,kernel_size, stride=stride),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
         )
-        self.pi_conv_layers2 = ProductUnits(out_channels, out_channels * 2)
-        self.dropout = nn.Dropout2d(dropout_rate)
-        self.bn = nn.BatchNorm2d(out_channels*2)
+
+        self.conv_block = nn.Sequential(
+            nn.Conv2d(out_channels, out_channels * 2, kernel_size=3, padding=1),
+            nn.BatchNorm2d(out_channels * 2),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
+        )
+
         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
-        
+        self.fc_dropout_rate = fc_dropout_rate
 
+        # Temporary dummy input to infer feature size
+        dummy_input = torch.zeros(1, in_channels,image_height, image_width)  # change to your real input size
         with torch.no_grad():
-            dummy_input = torch.randn(1, in_channels, image_height, image_width) 
-            x = self.conv_layers1(dummy_input)
-            x = self.pi_conv_layers2(x)
-            x = self.bn(x)
-            x = F.relu(x)
-            x = F.max_pool2d(x, 2)
-            x = self.dropout(x) 
-            fc_input_size = x.view(1, -1).size(1)    
-        self.mlp = MLP(
-            fc_input_size=fc_input_size,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
-        )
+            conv_out = self.prod_block(dummy_input)
+            conv_out = self.conv_block(conv_out)
+            conv_out = torch.flatten(conv_out, 1)
+            flattened_size = conv_out.shape[1]
 
-    def forward(self, x):
-        x = self.conv_layers1(x)
-        x = self.pi_conv_layers2(x)
-        x = self.bn(x)
-        x = F.relu(x)
-        x = F.max_pool2d(x, 2)
-        x = self.dropout(x) 
-        x = x.reshape(x.size(0), -1)
-        x = self.mlp(x)
-        return F.log_softmax(x, dim=1)
-
-class model_0(nn.Module):
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
-    ):
-        super(model_0, self).__init__()
-  
-        self.pi_conv_layers1 = ProductUnits(in_channels, out_channels )
-
-        self.conv_layers1 = StandardConv2D(
-             out_channels, out_channels*2, kernel_size, stride, padding, dropout_rate
-        )
-
-        self.dropout = nn.Dropout2d(dropout_rate)
-        self.bn = nn.BatchNorm2d(out_channels)
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
-        with torch.no_grad():
-            dummy_input = torch.randn(1, in_channels, image_height, image_width) 
-            x = self.pi_conv_layers1(dummy_input)
-            x = self.bn(x)
-            x = F.relu(x)
-            x = F.max_pool2d(x, 2)
-            x = self.dropout(x)
-            x = self.conv_layers1(x)
-            x =  self.global_pool(x)
-            fc_input_size = x.view(1, -1).size(1) 
-      
-        self.mlp = MLP(
-            fc_input_size=fc_input_size,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
-        )
+        self.fc1 = nn.Linear(flattened_size, 256)
+        self.fc2 = nn.Linear(256, number_classes)
 
     def forward(self, x, return_feature_maps=False):
-        pi_conv = self.pi_conv_layers1(x)
-        pi_conv = self.bn(pi_conv)
-        pi_conv= F.relu(pi_conv)
-        pi_conv = F.max_pool2d(pi_conv, 2)
-        pi_conv = self.dropout(pi_conv)
-        conv = self.conv_layers1(pi_conv)     
-        pooled  = self.global_pool(conv)
-        x_flat = pooled.reshape(pooled .size(0), -1)
-        x_out = self.mlp(x_flat)
-        output = F.log_softmax(x_out, dim=1)
+        prod1 = self.prod_block(x)
+        conv1 = self.conv_block(prod1)
+        x_flat = torch.flatten(conv1, 1)
+
+        output = F.relu(self.fc1(x_flat))
+        output = F.dropout(output, p=self.fc_dropout_rate, training=self.training)
+        output = self.fc2(output)
+
         if return_feature_maps:
-          return output, pi_conv,conv
-        else:
-          return output
+            return output, prod1, conv1
+        return output
+
+
+
+class model_0(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate,image_height, image_width):
+        super(model_0, self).__init__()
+
+        self.prod_block = nn.Sequential(
+            ProductUnits(out_channels, out_channels*2,kernel_size, stride=stride),
+            nn.BatchNorm2d(out_channels*2),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
+        )
+
+        self.conv_block = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels , kernel_size,stride=stride, padding=1),
+            nn.BatchNorm2d(out_channels ),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
+        )
+
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc_dropout_rate = fc_dropout_rate
+
+        # Temporary dummy input to infer feature size
+        dummy_input = torch.zeros(1, in_channels, image_height, image_width)  # change to your real input size
+        with torch.no_grad():
+            conv_out = self.conv_block(dummy_input)
+            conv_out = self.prod_block(conv_out)
+            conv_out = torch.flatten(conv_out, 1)
+            flattened_size = conv_out.shape[1]
+
+        self.fc1 = nn.Linear(flattened_size, 256)
+        self.fc2 = nn.Linear(256, number_classes)
+
+    def forward(self, x, return_feature_maps=False):
+        conv1 = self.conv_block(x)
+        prod1 = self.prod_block(conv1)
+        x_flat = torch.flatten(prod1, 1)
+
+        output = F.relu(self.fc1(x_flat))
+        output = F.dropout(output, p=self.fc_dropout_rate, training=self.training)
+        output = self.fc2(output)
+
+        if return_feature_maps:
+            return output, conv1, prod1
+        return output
+
+
+
+
 
 class model_4(nn.Module):
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
-        num_layers,
-    ):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate, image_height, image_width):
         super(model_4, self).__init__()
 
-        self.concat_conv_product = ConcatConv2DProductUnits(
-            in_channels=in_channels,
-            num_layers=num_layers,
-            initial_out_channels=out_channels,
+        self.prod_block = nn.Sequential(
+            ProductUnits(in_channels, out_channels, kernel_size, stride=stride),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
         )
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
 
-        output_channels_concat = out_channels * (2 ** (num_layers - 1)) * 2
+        self.conv_block = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(out_channels ),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
+        )
 
+        self.fc_dropout_rate = fc_dropout_rate
 
+        # Infer feature size using dummy input
+        dummy_input = torch.zeros(1, in_channels, image_height, image_width)
         with torch.no_grad():
-          dummy_input = torch.randn(1, in_channels, image_height, image_width)
-          x = self.concat_conv_product(dummy_input)
-          output_shape = x.shape 
+            prod_out = self.prod_block(dummy_input)
+            conv_out = self.conv_block(dummy_input)
 
+            if prod_out.shape[2:] != conv_out.shape[2:]:
+                conv_out = F.interpolate(conv_out, size=prod_out.shape[2:], mode="bilinear", align_corners=False)
 
-        fc_input_size = output_shape[1]  
+            concat = torch.cat((prod_out, conv_out), dim=1)
+            flattened_size = torch.flatten(concat, 1).shape[1]
 
-        self.mlp = MLP(
-            fc_input_size=fc_input_size,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
-        )
+        self.fc1 = nn.Linear(flattened_size, 256)
+        self.fc2 = nn.Linear(256, number_classes)
 
-    def forward(self, x):
-        x = self.concat_conv_product(x)
-        pooled  = self.global_pool(x)
-        x_flat = pooled.reshape(pooled.size(0), -1)
-        out = self.mlp(x_flat)
-        return F.log_softmax(out, dim=1)
+    def forward(self, x, return_feature_maps=False):
+        prod1 = self.prod_block(x)
+        conv1 = self.conv_block(x)
+
+        if prod1.shape[2:] != conv1.shape[2:]:
+            conv1 = F.interpolate(conv1, size=prod1.shape[2:], mode="bilinear", align_corners=False)
+
+        concat = torch.cat((prod1, conv1), dim=1)
+        x_flat = torch.flatten(concat, 1)
+
+        output = F.relu(self.fc1(x_flat))
+        output = F.dropout(output, p=self.fc_dropout_rate, training=self.training)
+        output = self.fc2(output)
+
+        if return_feature_maps:
+            return output, prod1, conv1
+        return output
 
 
 class model_5(nn.Module):
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
-        num_layers,
-    ):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate, image_height, image_width):
         super(model_5, self).__init__()
 
-        self.num_layers = num_layers
-
-        self.concat_conv_product = ConcatConv2DProductUnits(
-          in_channels=in_channels,
-          num_layers=num_layers, 
-          initial_out_channels=out_channels,
+        self.prod_block = nn.Sequential(
+            ProductUnits(in_channels, out_channels, kernel_size, stride=stride),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
         )
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
 
+        self.prod_block2 = nn.Sequential(
+            ProductUnits(out_channels*2, out_channels*2, kernel_size, stride=stride),
+            nn.BatchNorm2d(out_channels*2),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
+        )
+
+        self.conv_block = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(out_channels ),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
+        )
+        self.conv_block2 = nn.Sequential(
+            nn.Conv2d(out_channels*2, out_channels*2, kernel_size=3, padding=1),
+            nn.BatchNorm2d(out_channels *2),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(dropout_rate)
+        )
+
+        self.fc_dropout_rate = fc_dropout_rate
+
+        # Infer feature size using dummy input
+        dummy_input = torch.zeros(1, in_channels, image_height, image_width)
         with torch.no_grad():
-            dummy_input = torch.randn(1, in_channels, image_height, image_width)
-            output_shape = self.concat_conv_product(dummy_input).shape
+            prod_out = self.prod_block(dummy_input)
+            conv_out = self.conv_block(dummy_input)
 
-        fc_input_size = output_shape[1]  
+            if prod_out.shape[2:] != conv_out.shape[2:]:
+                conv_out = F.interpolate(conv_out, size=prod_out.shape[2:], mode="bilinear", align_corners=False)
 
-        self.mlp = MLP(
-            fc_input_size=fc_input_size,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
-        )
+            concat = torch.cat((prod_out, conv_out), dim=1)
 
-    def forward(self, x):
-        x = self.concat_conv_product(x)
-        pooled  = self.global_pool(x)
-        x_flat = pooled.reshape(pooled.size(0), -1)
-        out = self.mlp(x_flat)
-        return F.log_softmax(out, dim=1)
+            prod_out2 = self.prod_block2(concat)
+            conv_out2 = self.conv_block2(concat)
+
+            if prod_out2.shape[2:] != conv_out2.shape[2:]:
+                conv_out2 = F.interpolate(conv_out2, size=prod_out2.shape[2:], mode="bilinear", align_corners=False)
+
+            concat2 = torch.cat((prod_out2, conv_out2), dim=1)
+
+            flattened_size = torch.flatten(concat2, 1).shape[1]
+
+        self.fc1 = nn.Linear(flattened_size, 256)
+        self.fc2 = nn.Linear(256, number_classes)
+
+    def forward(self, x, return_feature_maps=False):
+        prod1 = self.prod_block(x)
+        conv1 = self.conv_block(x)
+
+        if prod1.shape[2:] != conv1.shape[2:]:
+          conv1 = F.interpolate(conv1, size=prod1.shape[2:], mode="bilinear", align_corners=False)
+
+        concat = torch.cat((prod1, conv1), dim=1)
+
+        # Use prod_block2 and conv_block2 here on concat, NOT on x
+        prod2 = self.prod_block2(concat)
+        conv2 = self.conv_block2(concat)
+
+        if prod2.shape[2:] != conv2.shape[2:]:
+            conv2 = F.interpolate(conv2, size=prod2.shape[2:], mode="bilinear", align_corners=False)
+
+        concat2 = torch.cat((prod2, conv2), dim=1)
+
+        x_flat = torch.flatten(concat2, 1)
+
+        output = F.relu(self.fc1(x_flat))
+        output = F.dropout(output, p=self.fc_dropout_rate, training=self.training)
+        output = self.fc2(output)
+
+        if return_feature_maps:
+            return output, prod2, conv2
+        return output
+
+
+# class model_5(nn.Module):
+#     def __init__(
+#         self,
+#         in_channels,
+#         out_channels,
+#         kernel_size,
+#         stride,
+#         padding,
+#         dropout_rate,
+#         image_height,
+#         image_width,
+#         fc_hidden_size,
+#         number_classes,
+#         fc_dropout_rate,
+#         num_layers,
+#     ):
+#         super(model_5, self).__init__()
+
+#         self.num_layers = num_layers
+
+#         self.concat_conv_product = ConcatConv2DProductUnits(
+#           in_channels=in_channels,
+#           num_layers=num_layers, 
+#           initial_out_channels=out_channels,
+#         )
+#         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
+
+#         with torch.no_grad():
+#             dummy_input = torch.randn(1, in_channels, image_height, image_width)
+#             output_shape = self.concat_conv_product(dummy_input).shape
+
+#         fc_input_size = output_shape[1]  
+
+#         self.mlp = MLP(
+#             fc_input_size=fc_input_size,
+#             fc_hidden_size=fc_hidden_size,
+#             num_classes=number_classes,
+#             fc_dropout_rate=fc_dropout_rate,
+#         )
+
+#     def forward(self, x):
+#         x = self.concat_conv_product(x)
+#         pooled  = self.global_pool(x)
+#         x_flat = pooled.reshape(pooled.size(0), -1)
+#         out = self.mlp(x_flat)
+#         return F.log_softmax(out, dim=1)
 
 class model_6(nn.Module):
     def __init__(self, ResidualBlock, num_classes=10):

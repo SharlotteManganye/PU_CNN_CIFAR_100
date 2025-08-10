@@ -67,13 +67,18 @@ if __name__ == "__main__":
     # Training variables
     batch_size = training["batch_size"]
     epochs = training["epochs"]
-    learning_rate = training["learning_rate"]
+    learning_rate = float(training["learning_rate"])
     epsilon = training["epsilon"]
     grad_epsilon = training["grad_epsilon"]
     clip_factor = training["clip_factor"]
     dropout_rate = training["dropout_rate"]
     fc_dropout_rate = training["fc_dropout_rate"]
     fc_hidden_size = training["fc_hidden_size"]
+
+   
+
+   
+
 
     Kfolds = training["Kfolds"]
     # loss_func = training["loss_func"]
@@ -125,11 +130,7 @@ if __name__ == "__main__":
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
       ])
-      # train_transform = transforms.Compose([transforms.RandomHorizontalFlip(),
-      #                  transforms.ToTensor(),
-      #                  transforms.RandomErasing(),
-      #                  transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]
-      #                  )
+
 
       test_transform = transforms.Compose([
         transforms.ToTensor(),
@@ -172,14 +173,12 @@ if __name__ == "__main__":
       mean, std = data_mean_std_greyscale(train_dataset_mean_std)
 
       train_transform = transforms.Compose([
-        transforms.RandomRotation(10),
-        transforms.ToTensor(),
-        transforms.Normalize(mean, std)
+        transforms.ToTensor()
       ])
 
       test_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean, std)
+        transforms.ToTensor()
+       
       ])
 
       train_dataset = datasets.MNIST(root="data", train=True, transform=train_transform)
@@ -211,7 +210,6 @@ if __name__ == "__main__":
     # model
 
     in_channels =  train_dataset[0][0].shape[0]
-    out_channels = 16
     image_height = train_dataset[0][0].shape[1]
     image_width = train_dataset[0][0].shape[2]
     targets = [label for _, label in train_dataset]
@@ -222,10 +220,10 @@ if __name__ == "__main__":
     # epsilon = 1e-10
     # clip_factor =  0.01
     eps = 1e-3
-    kernel_size = 3
+    kernel_size = 2
     stride = 1
-    padding = 1
-    weight_decay =1e-5
+    padding = 0
+    weight_decay =float(1e-5)
     # dropout_rate = 0.25
     # learning_rate = 1e-3
     loss_func = nn.CrossEntropyLoss()
@@ -237,115 +235,55 @@ if __name__ == "__main__":
     if model_id == 1:
         model = model_1(
         in_channels,
-        out_channels,
+        out_channels,        
         kernel_size,
         stride,
-        padding,
         dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
         number_classes,
-        fc_dropout_rate,
+        fc_dropout_rate
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 2:
         model = model_2(
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
+          in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 3:
         model = model_3(
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
+          in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate,image_height, image_width
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
+        optimizer = torch.optim.Adam(model.parameters(), lr=float(learning_rate), weight_decay=weight_decay)  
 
     elif model_id == 0:
         model = model_0(
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
+        in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate,image_height, image_width
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 4:
         model = model_4(
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
-        num_layers,
+        in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate, image_height, image_width
 
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 5:
         model = model_5(
-         in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
-        number_classes,
-        fc_dropout_rate,
-        num_layers,
+        in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate, image_height, image_width
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
     elif model_id == 6:
         model = baseline_model_1(
         in_channels,
-        out_channels,
+        out_channels,        
         kernel_size,
         stride,
-        padding,
         dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
         number_classes,
-        fc_dropout_rate,
+        fc_dropout_rate
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  
 
@@ -371,12 +309,7 @@ if __name__ == "__main__":
         out_channels,
         kernel_size,
         stride,
-        padding,
         dropout_rate,
-        image_height,
-        image_width,
-        # fc_input_size,
-        fc_hidden_size,
         number_classes,
         fc_dropout_rate,
         )
@@ -436,9 +369,9 @@ print(model)
 # test_loss, test_acc = test(model, test_loader, loss_func, device, config_filename, base_results_dir='results/test', save_results=True, epoch=epochs)
 
 
-print_section("SIMULATIONS")
+# print_section("SIMULATIONS")
 
-run_simulations(config_filename)
+# run_simulations(config_filename)
 
 
 # print_section("Hyperparameter Search")
@@ -469,31 +402,30 @@ run_simulations(config_filename)
 
 
 
-# print_section("Grid_Search")
+print_section("Grid_Search")
 
-# run_hyperparameter_search_grid(
-#     model_id=model_id, 
-#     in_channels=number_channels,
-#     out_channels=out_channels,
-#     kernel_size=kernel_size, 
-#     stride=stride, 
-#     padding=padding,
-#     dropout_rate=dropout_rate,
-#     image_height=image_height,
-#     image_width=image_width, 
-#     fc_hidden_size=fc_hidden_size, 
-#     number_classes=number_classes,
-#     fc_dropout_rate=fc_dropout_rate, 
-#     num_layers=num_layers, 
-#     train_dataset=train_dataset, 
-#     val_ratio=val_ratio, 
-#     seed=seed, 
-#     device=device,
-#     loss_func=loss_func, 
-#     epochs=epochs, 
-#     base_results_dir='results', 
-#     config_filename=config_filename
-# )
+run_hyperparameter_search_grid(
+    model_id=model_id, 
+    in_channels=in_channels, 
+    out_channels=out_channels,
+    kernel_size=kernel_size,
+    stride=stride,
+    padding=padding,
+    image_height=image_height,
+    image_width=image_width,
+    dropout_rate=dropout_rate,
+    number_classes=number_classes,
+    fc_hidden_size=fc_hidden_size,
+    fc_dropout_rate=fc_dropout_rate,
+    num_layers=num_layers, 
+    train_dataset=train_dataset, 
+    val_ratio=val_ratio, 
+    seed=seed, 
+    device=device,
+    loss_func=loss_func, 
+    epochs=epochs, 
+    base_results_dir='results', 
+    config_filename=config_filename)
 
 
 # print_section("Cross Validition")

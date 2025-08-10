@@ -11,12 +11,12 @@ data:
 model:
   model_id: 8
   number_channels: 1
-  out_channels: 16
+  out_channels: 64
   number_classes: 10
   num_layers : 1
 
 training:
-  batch_size: 128
+  batch_size: 132
   epochs: 150
   learning_rate: 0.001
   epsilon: 1e-10
@@ -24,6 +24,6 @@ training:
   clip_factor: 0.01
   Kfolds: 5
   fc_hidden_size: 0.25
-  fc_hidden_size: 128
+  fc_hidden_size: 64
   fc_dropout_rate:  0.25
   dropout_rate:  0.25

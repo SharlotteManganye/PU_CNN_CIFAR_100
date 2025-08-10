@@ -64,11 +64,12 @@ def log_trial_result_csv(log_path, params, val_loss):
 
 def objective(params, fixed_args):
     (
-          model_id, in_channels, out_channels, kernel_size, stride, padding,
-          dropout_rate, image_height, image_width, fc_hidden_size, number_classes,
-          fc_dropout_rate, num_layers, train_dataset, val_ratio, seed, device,
-          loss_func, epochs, base_results_dir
-      ) = fixed_args
+        model_id, in_channels, out_channels, kernel_size, stride, padding,
+        dropout_rate, image_height, image_width, fc_hidden_size,
+        number_classes, fc_dropout_rate, num_layers, train_dataset,
+        val_ratio, seed, device, loss_func, epochs, base_results_dir
+    ) = fixed_args
+
 
 
     current_batch_size = params["batch_size"]
@@ -87,13 +88,27 @@ def objective(params, fixed_args):
         raise ValueError("Invalid model ID")
 
     model_args = [
-        in_channels, out_channels, kernel_size, stride, padding, dropout_rate,
-        image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate
+in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate
     ]
-    if model_id == 11:
-      model_args = [ResidualBlock, number_classes]  # Adjust as needed
-    elif model_id in [4, 5, 9, 10]:
+    if model_id in [0, 3]:
+
+      model_args = [
+        in_channels, out_channels, kernel_size, stride, dropout_rate,
+        number_classes, fc_dropout_rate, image_height, image_width
+    ]
+    elif model_id == 11:
+      model_args = [ResidualBlock, number_classes]
+    elif model_id in [4, 5]:
+      model_args = [
+        in_channels, out_channels, kernel_size, stride, dropout_rate,
+        number_classes, fc_dropout_rate, image_height, image_width
+    ]
+    elif model_id in [9, 10]:
+    # if baseline models 9 and 10 do not need image dims, keep as is:
       model_args.append(num_layers)
+
+
+
 
 
     model = model_constructors[model_id](*model_args).to(device)

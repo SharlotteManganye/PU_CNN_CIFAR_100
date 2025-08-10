@@ -1,47 +1,65 @@
 from model_components import *
-import torch.nn.functional as F
 import torch
-
+import torch.nn as nn
+import torch.nn.functional as F
 
 class baseline_model_1(nn.Module):
     def __init__(
         self,
         in_channels,
-        out_channels,
+        out_channels,        
         kernel_size,
         stride,
-        padding,
         dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
         number_classes,
-        fc_dropout_rate,
+        fc_dropout_rate
     ):
         super(baseline_model_1, self).__init__()
+        
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding=1)
 
-        self.conv_layers = StandardConv2D(in_channels, out_channels, kernel_size, stride, padding, dropout_rate)
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
+        # Pooling
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
-        with torch.no_grad():
-          dummy_input = torch.randn(1, in_channels, image_height, image_width)
-          x = self.conv_layers(dummy_input)
-          x = self.global_pool(x) 
-          fc_input_size = x.view(1, -1).size(1) 
-      
-        self.mlp = MLP(
-            fc_input_size=fc_input_size,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
-        )
+        # Dropout
+        self.dropout_conv = nn.Dropout(dropout_rate)
+        self.fc_dropout_rate = fc_dropout_rate  # save for forward
+
+        # Flatten
+        self.flatten = nn.Flatten()
+
+        # Fully connected layers (will init later based on input size)
+        self.fc1 = None
+        self.fc2 = nn.Linear(out_channels * 2, number_classes)
+
+    def _initialize_fc_layers(self, x):
+        """Initialize FC layers dynamically based on flattened size."""
+        in_features = x.size(1)
+        self.fc1 = nn.Linear(in_features, 256)  # hidden layer with more capacity
+        self.fc2 = nn.Linear(256, self.fc2.out_features)
+        self.fc1.to(x.device)
+        self.fc2.to(x.device)
 
     def forward(self, x):
-      x = self.conv_layers(x)
-      x  = self.global_pool(x)
-      x = x.reshape(x.size(0), -1)
-      x = self.mlp(x)
-      return F.log_softmax(x, dim=1)
+        # First conv block
+        x = F.relu(self.conv1(x))
+        x = self.pool(x)
+        x = self.dropout_conv(x)
+
+        # Flatten
+        x = self.flatten(x)
+
+        # Initialize FC layers once
+        if self.fc1 is None:
+            self._initialize_fc_layers(x)
+
+        # Fully connected head
+        x = F.relu(self.fc1(x))
+        x = F.dropout(x, p=self.fc_dropout_rate, training=self.training)
+        x = self.fc2(x)
+
+        return x
 
 
 class baseline_model_2(nn.Module):
@@ -63,7 +81,7 @@ class baseline_model_2(nn.Module):
 
         self.conv_layers1 = StandardConv2D( in_channels, out_channels, kernel_size, stride, padding, dropout_rate)
         self.conv_layers2 = StandardConv2D(out_channels, out_channels*2, kernel_size, stride, padding, dropout_rate)
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.global_pool = nn.AdaptiveAvgPool2d((4, 4))
 
         with torch.no_grad():
             dummy_input = torch.randn(1, in_channels, image_height, image_width)
@@ -90,86 +108,171 @@ class baseline_model_3(nn.Module):
     def __init__(
         self,
         in_channels,
-        out_channels,
+        out_channels,        
         kernel_size,
         stride,
-        padding,
         dropout_rate,
-        image_height,
-        image_width,
-        # fc_input_size,
-        fc_hidden_size,
         number_classes,
-        fc_dropout_rate,
+        fc_dropout_rate
     ):
         super(baseline_model_3, self).__init__()
-
-        self.conv_layers1 = StandardConv2D( in_channels, out_channels, kernel_size, stride, padding, dropout_rate )
-        self.conv_layers2 = StandardConv2D(out_channels, out_channels * 2, kernel_size, stride, padding, dropout_rate)
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
-
-
-        with torch.no_grad():
-            dummy_input = torch.randn(1, in_channels, image_height, image_width)
-            output_shape = self.conv_layers2(self.conv_layers1(dummy_input)).shape
-
-        fc_input_size = output_shape[1]  
         
-        self.mlp = MLP(
-            fc_input_size=fc_input_size,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
-        )
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding=1)
+        self.conv2 = nn.Conv2d(out_channels, out_channels * 2, kernel_size, stride, padding=1)
+
+        # Pooling
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        # Dropout
+        self.dropout_conv = nn.Dropout(dropout_rate)
+        self.fc_dropout_rate = fc_dropout_rate  # save for forward
+
+        # Flatten
+        self.flatten = nn.Flatten()
+
+        # Fully connected layers (will init later based on input size)
+        self.fc1 = None
+        self.fc2 = nn.Linear(out_channels * 2, number_classes)
+
+    def _initialize_fc_layers(self, x):
+        """Initialize FC layers dynamically based on flattened size."""
+        in_features = x.size(1)
+        self.fc1 = nn.Linear(in_features, 256)  # hidden layer with more capacity
+        self.fc2 = nn.Linear(256, self.fc2.out_features)
+        self.fc1.to(x.device)
+        self.fc2.to(x.device)
 
     def forward(self, x):
-        x = self.conv_layers1(x)
-        x = self.conv_layers2(x)
-        x  = self.global_pool(x)
-        x = x.reshape(x.size(0), -1)
-        x = self.mlp(x)
-        return F.log_softmax(x, dim=1)
+        # First conv block
+        x = F.relu(self.conv1(x))
+        x = self.pool(x)
+        x = self.dropout_conv(x)
+
+        # Second conv block
+        x = F.relu(self.conv2(x))
+        x = self.pool(x)
+        x = self.dropout_conv(x)
+
+        # Flatten
+        x = self.flatten(x)
+
+        # Initialize FC layers once
+        if self.fc1 is None:
+            self._initialize_fc_layers(x)
+
+        # Fully connected head
+        x = F.relu(self.fc1(x))
+        x = F.dropout(x, p=self.fc_dropout_rate, training=self.training)
+        x = self.fc2(x)
+
+        return x
 
 class baseline_model_4(nn.Module):
     def __init__(
         self,
         in_channels,
-        out_channels,
+        out_channels,        
         kernel_size,
         stride,
-        padding,
         dropout_rate,
-        image_height,
-        image_width,
-        fc_hidden_size,
         number_classes,
-        fc_dropout_rate,
-        num_layers,
+        fc_dropout_rate
     ):
         super(baseline_model_4, self).__init__()
-        self.num_layers = num_layers
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.conv_layers = StandardConv2D(in_channels, out_channels*2, kernel_size, stride, padding, dropout_rate)
+        
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding=1)
+        self.conv2 = nn.Conv2d(out_channels, out_channels * 2, kernel_size, stride, padding=1)
 
-        with torch.no_grad():
-          dummy_input = torch.randn(1, in_channels, image_height, image_width)
-          output_shape = self.conv_layers(dummy_input).shape
-          
-        fc_input_size = output_shape[1]  
+        # Pooling
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
-        self.mlp = MLP(
-            fc_input_size=fc_input_size,
-            fc_hidden_size=fc_hidden_size,
-            num_classes=number_classes,
-            fc_dropout_rate=fc_dropout_rate,
-        )
+        # Dropout
+        self.dropout_conv = nn.Dropout(dropout_rate)
+        self.fc_dropout_rate = fc_dropout_rate  # save for forward
+
+        # Flatten
+        self.flatten = nn.Flatten()
+
+        # Fully connected layers (will init later based on input size)
+        self.fc1 = None
+        self.fc2 = nn.Linear(out_channels * 2, number_classes)
+
+    def _initialize_fc_layers(self, x):
+        """Initialize FC layers dynamically based on flattened size."""
+        in_features = x.size(1)
+        self.fc1 = nn.Linear(in_features, 256)  # hidden layer with more capacity
+        self.fc2 = nn.Linear(256, self.fc2.out_features)
+        self.fc1.to(x.device)
+        self.fc2.to(x.device)
 
     def forward(self, x):
-        x = self.conv_layers(x)
-        pooled  = self.global_pool(x)
-        x_flat = pooled.reshape(pooled.size(0), -1)
-        out = self.mlp(x_flat)
-        return F.log_softmax(out, dim=1)
+        # First conv block
+        x = F.relu(self.conv1(x))
+        x = self.pool(x)
+        x = self.dropout_conv(x)
+
+        # Second conv block
+        x = F.relu(self.conv2(x))
+        x = self.pool(x)
+        x = self.dropout_conv(x)
+
+        # Flatten
+        x = self.flatten(x)
+
+        # Initialize FC layers once
+        if self.fc1 is None:
+            self._initialize_fc_layers(x)
+
+        # Fully connected head
+        x = F.relu(self.fc1(x))
+        x = F.dropout(x, p=self.fc_dropout_rate, training=self.training)
+        x = self.fc2(x)
+
+        return x
+
+
+# class baseline_model_4(nn.Module):
+#     def __init__(
+#         self,
+#         in_channels,
+#         out_channels,
+#         kernel_size,
+#         stride,
+#         padding,
+#         dropout_rate,
+#         image_height,
+#         image_width,
+#         fc_hidden_size,
+#         number_classes,
+#         fc_dropout_rate,
+#         num_layers,
+#     ):
+#         super(baseline_model_4, self).__init__()
+#         self.num_layers = num_layers
+#         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
+#         self.conv_layers = StandardConv2D(in_channels, out_channels*2, kernel_size, stride, padding, dropout_rate)
+
+#         with torch.no_grad():
+#           dummy_input = torch.randn(1, in_channels, image_height, image_width)
+#           output_shape = self.conv_layers(dummy_input).shape
+          
+#         fc_input_size = output_shape[1]  
+
+#         self.mlp = MLP(
+#             fc_input_size=fc_input_size,
+#             fc_hidden_size=fc_hidden_size,
+#             num_classes=number_classes,
+#             fc_dropout_rate=fc_dropout_rate,
+#         )
+
+#     def forward(self, x):
+#         x = self.conv_layers(x)
+#         pooled  = self.global_pool(x)
+#         x_flat = pooled.reshape(pooled.size(0), -1)
+#         out = self.mlp(x_flat)
+#         return F.log_softmax(out, dim=1)
 
 class baseline_model_5(nn.Module):
     def __init__(

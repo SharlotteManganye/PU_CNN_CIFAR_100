@@ -24,39 +24,37 @@ def select_model(model_id, in_channels, out_channels, kernel_size, stride, paddi
                  fc_dropout_rate, dropout_rate, num_layers):
 
     if model_id == 0:
-        return model_0(in_channels, out_channels, kernel_size, stride, padding,
-                       dropout_rate, image_height, image_width,
-                       fc_hidden_size, number_classes, fc_dropout_rate)
+        return model_0(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate,image_height, image_width)
 
     elif model_id == 1:
-        return model_1(in_channels, out_channels, kernel_size, stride, padding,
-                       dropout_rate, image_height, image_width,
-                       fc_hidden_size, number_classes, fc_dropout_rate)
+        return model_1( in_channels,
+        out_channels,        
+        kernel_size,
+        stride,
+        dropout_rate,
+        number_classes,
+        fc_dropout_rate)
 
     elif model_id == 2:
-        return model_2(in_channels, out_channels, kernel_size, stride, padding,
-                       dropout_rate, image_height, image_width,
-                       fc_hidden_size, number_classes, fc_dropout_rate)
+        return model_2(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate)
 
     elif model_id == 3:
-        return model_3(in_channels, out_channels, kernel_size, stride, padding,
-                       dropout_rate, image_height, image_width,
-                       fc_hidden_size, number_classes, fc_dropout_rate)
+        return model_3(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate,image_height, image_width)
 
     elif model_id == 4:
-        return model_4(in_channels, out_channels, kernel_size, stride, padding,
-                       dropout_rate, image_height, image_width,
-                       fc_hidden_size, number_classes, fc_dropout_rate, num_layers)
+        return model_4(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate, image_height, image_width)
 
     elif model_id == 5:
-        return model_5(in_channels, out_channels, kernel_size, stride, padding,
-                       dropout_rate, image_height, image_width,
-                       fc_hidden_size, number_classes, fc_dropout_rate, num_layers)
+        return model_5(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate, image_height, image_width)
 
     elif model_id == 6:
-        return baseline_model_1(in_channels, out_channels, kernel_size, stride, padding,
-                                dropout_rate, image_height, image_width,
-                                fc_hidden_size, number_classes, fc_dropout_rate)
+        return baseline_model_1(in_channels,
+        out_channels,        
+        kernel_size,
+        stride,
+        dropout_rate,
+        number_classes,
+        fc_dropout_rate)
 
     elif model_id == 7:
         return baseline_model_2(in_channels, out_channels, kernel_size, stride, padding,
@@ -64,9 +62,13 @@ def select_model(model_id, in_channels, out_channels, kernel_size, stride, paddi
                                 fc_hidden_size, number_classes, fc_dropout_rate)
 
     elif model_id == 8:
-        return baseline_model_3(in_channels, out_channels, kernel_size, stride, padding,
-                                dropout_rate, image_height, image_width,
-                                fc_hidden_size, number_classes, fc_dropout_rate)
+        return baseline_model_3(        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        dropout_rate,
+        number_classes,
+        fc_dropout_rate,)
 
     elif model_id == 9:
         return baseline_model_4(in_channels, out_channels, kernel_size, stride, padding,
@@ -140,34 +142,39 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
     #                                       transforms.Normalize((0.4914, 0.4822, 0.4465),  # normalize
     #                                                           (0.2023, 0.1994, 0.2010)),
     #                                   ])
-    train_transform = transforms.Compose([transforms.RandomHorizontalFlip(),
-                       transforms.ToTensor(),
-                       transforms.RandomErasing(),
-                      #  transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))] # CI_FAR10 mean and std for RGB
-                       transforms.Normalize((0.1307,), (0.3081,))] # MNIST mean and std for grayscale
 
-                       )
+    # For CI_Far10
+    # train_transform = transforms.Compose([
+    #                     transforms.RandomHorizontalFlip(),
+    #                    transforms.ToTensor(),
+    #                     transforms.RandomErasing(),
+    #                    transforms.Normalize(mean, std)] # MNIST mean and std for grayscale
+
+    #                    )
+
+  # for MNIST
+    train_transform = transforms.Compose([
+                     
+                       transforms.ToTensor()
+                      #  transforms.Normalize(mean, std)
+                       ])
 
     test_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean, std)
+        transforms.ToTensor()
+        # transforms.Normalize(mean, std)
       ])
-    full_train_dataset = dataset(root="data", train=True, transform=train_transform)
+    # Load the full training and test datasets with the new transforms
+    train_dataset = dataset(root="data", train=True, transform=train_transform)
     test_dataset = dataset(root="data", train=False, transform=test_transform)
 
     # Extract image dimensions from one sample
-    in_channels = full_train_dataset[0][0].shape[0]
-    image_height = full_train_dataset[0][0].shape[1]
-    image_width = full_train_dataset[0][0].shape[2]
+    in_channels = train_dataset[0][0].shape[0]
+    image_height = train_dataset[0][0].shape[1]
+    image_width = train_dataset[0][0].shape[2]
 
-    # Train/val split
-    val_size = int(val_ratio * len(full_train_dataset))
-    train_size = len(full_train_dataset) - val_size
-    new_train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size], generator=torch.Generator().manual_seed(seed))
-    combined_test_dataset = ConcatDataset([val_dataset, test_dataset])
-
-    train_loader = get_train_loader(new_train_dataset, batch_size, num_workers, seed)
-    test_loader = get_test_loader(combined_test_dataset, batch_size, num_workers)
+    # Create data loaders for the full datasets
+    train_loader = get_train_loader(train_dataset, batch_size, num_workers, seed)
+    test_loader = get_test_loader(test_dataset, batch_size, num_workers)
 
     loss_func = nn.CrossEntropyLoss()
 
