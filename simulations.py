@@ -12,84 +12,192 @@ from utils import *
 from models import *
 from baseline_models import *
 
+
 def get_train_loader(train_dataset, batch_size, num_workers, seed):
     torch.manual_seed(seed)
-    return DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    return DataLoader(
+        train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers
+    )
+
 
 def get_test_loader(dataset, batch_size, num_workers):
-    return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    return DataLoader(
+        dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers
+    )
 
-def select_model(model_id, in_channels, out_channels, kernel_size, stride, padding,
-                 image_height, image_width, fc_hidden_size, number_classes,
-                 fc_dropout_rate, dropout_rate, num_layers):
+
+def select_model(
+    model_id,
+    in_channels,
+    out_channels,
+    kernel_size,
+    stride,
+    padding,
+    image_height,
+    image_width,
+    fc_hidden_size,
+    number_classes,
+    fc_dropout_rate,
+    dropout_rate,
+    num_layers,
+):
 
     if model_id == 0:
-        return model_0(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate,image_height, image_width)
+        return model_0(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+            image_height,
+            image_width,
+        )
 
     elif model_id == 1:
-        return model_1( in_channels,
-        out_channels,        
-        kernel_size,
-        stride,
-        dropout_rate,
-        number_classes,
-        fc_dropout_rate)
+        return model_1(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+        )
 
     elif model_id == 2:
-        return model_2(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate)
+        return model_2(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+        )
 
     elif model_id == 3:
-        return model_3(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate,image_height, image_width)
+        return model_3(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+            image_height,
+            image_width,
+        )
 
     elif model_id == 4:
-        return model_4(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate, image_height, image_width)
+        return model_4(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+            image_height,
+            image_width,
+        )
 
     elif model_id == 5:
-        return model_5(in_channels, out_channels, kernel_size, stride, dropout_rate, number_classes, fc_dropout_rate, image_height, image_width)
+        return model_5(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+            image_height,
+            image_width,
+        )
 
     elif model_id == 6:
-        return baseline_model_1(in_channels,
-        out_channels,        
-        kernel_size,
-        stride,
-        dropout_rate,
-        number_classes,
-        fc_dropout_rate)
+        return baseline_model_1(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+        )
 
     elif model_id == 7:
-        return baseline_model_2(in_channels, out_channels, kernel_size, stride, padding,
-                                dropout_rate, image_height, image_width,
-                                fc_hidden_size, number_classes, fc_dropout_rate)
+        return baseline_model_2(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dropout_rate,
+            image_height,
+            image_width,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
 
     elif model_id == 8:
-        return baseline_model_3(        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        dropout_rate,
-        number_classes,
-        fc_dropout_rate,)
+        return baseline_model_3(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+        )
 
     elif model_id == 9:
-        return baseline_model_4(in_channels, out_channels, kernel_size, stride, padding,
-                                dropout_rate, image_height, image_width,
-                                fc_hidden_size, number_classes, fc_dropout_rate, num_layers)
+        return baseline_model_4(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dropout_rate,
+            image_height,
+            image_width,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+            num_layers,
+        )
 
     elif model_id == 10:
-        return baseline_model_5(in_channels, out_channels, kernel_size, stride, padding,
-                                dropout_rate, image_height, image_width,
-                                fc_hidden_size, number_classes, fc_dropout_rate, num_layers)
+        return baseline_model_5(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dropout_rate,
+            image_height,
+            image_width,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+            num_layers,
+        )
 
     elif model_id == 11:
-        return model_6( ResidualBlock
-          
-        )
+        return ResNet(ResidualBlock)
 
     else:
         raise ValueError(f"Invalid model_id: {model_id}")
 
 
-def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base_results_dir="results/simulations"):
+def run_simulations(
+    config_filename="model_2.yaml",
+    model_id=1,
+    num_runs=5,
+    base_results_dir="results/simulations",
+):
     config_path = os.path.join("configs", config_filename)
     config = load_config(config_path)
 
@@ -128,7 +236,9 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
     else:
         raise ValueError("Dataset ID not recognised")
 
-    train_dataset_mean_std = dataset(root="./data", train=True, download=True, transform=transforms.ToTensor())
+    train_dataset_mean_std = dataset(
+        root="./data", train=True, download=True, transform=transforms.ToTensor()
+    )
     mean, std = mean_std_func(train_dataset_mean_std)
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, std)])
     # Data transforms (normalization & data augmentation)
@@ -152,17 +262,20 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
 
     #                    )
 
-  # for MNIST
-    train_transform = transforms.Compose([
-                     
-                       transforms.ToTensor()
-                      #  transforms.Normalize(mean, std)
-                       ])
+    # for MNIST
+    train_transform = transforms.Compose(
+        [
+            transforms.ToTensor()
+            #  transforms.Normalize(mean, std)
+        ]
+    )
 
-    test_transform = transforms.Compose([
-        transforms.ToTensor()
-        # transforms.Normalize(mean, std)
-      ])
+    test_transform = transforms.Compose(
+        [
+            transforms.ToTensor()
+            # transforms.Normalize(mean, std)
+        ]
+    )
     # Load the full training and test datasets with the new transforms
     train_dataset = dataset(root="data", train=True, transform=train_transform)
     test_dataset = dataset(root="data", train=False, transform=test_transform)
@@ -183,9 +296,19 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
         torch.manual_seed(seed + run_id)
 
         model = select_model(
-            model_id, in_channels, model_cfg["out_channels"], 3, 1, 1,
-            image_height, image_width, fc_hidden_size, number_classes,
-            fc_dropout_rate, dropout_rate, num_layers
+            model_id,
+            in_channels,
+            model_cfg["out_channels"],
+            3,
+            1,
+            1,
+            image_height,
+            image_width,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+            dropout_rate,
+            num_layers,
         )
 
         model = model.to(device)
@@ -199,31 +322,48 @@ def run_simulations(config_filename="model_2.yaml", model_id=1, num_runs=5, base
 
         for epoch in range(1, epochs + 1):
             current_epoch_train_metrics_list = train(
-                model, train_loader, optimizer, loss_func, 1, device, config_filename,
+                model,
+                train_loader,
+                optimizer,
+                loss_func,
+                1,
+                device,
+                config_filename,
                 val_loader=None,
                 base_results_dir=sim_dir,
                 params_subdir="",
-                save_outputs=False
+                save_outputs=False,
             )
 
             current_train_metrics = current_epoch_train_metrics_list[0]
-            train_loss = current_train_metrics['Train_Loss']
-            train_acc = current_train_metrics['Train_Accuracy']
+            train_loss = current_train_metrics["Train_Loss"]
+            train_acc = current_train_metrics["Train_Accuracy"]
 
-            test_loss, test_acc = test(model, test_loader, loss_func, device, config_filename, base_results_dir=sim_dir)
+            test_loss, test_acc = test(
+                model,
+                test_loader,
+                loss_func,
+                device,
+                config_filename,
+                base_results_dir=sim_dir,
+            )
 
-            print(f"Epoch {epoch}: Train Loss = {train_loss:.4f}, Train Accuracy = {train_acc:.2f}%, Test Accuracy = {test_acc:.2f}%, Test Loss = {test_loss:.4f}")
+            print(
+                f"Epoch {epoch}: Train Loss = {train_loss:.4f}, Train Accuracy = {train_acc:.2f}%, Test Accuracy = {test_acc:.2f}%, Test Loss = {test_loss:.4f}"
+            )
 
-            epoch_metrics.append({
-                "Epoch": epoch,
-                "Train_Loss": train_loss,
-                "Train_Accuracy": train_acc,
-                "Test_Accuracy": test_acc,
-                "Test_Loss": test_loss
-            })
+            epoch_metrics.append(
+                {
+                    "Epoch": epoch,
+                    "Train_Loss": train_loss,
+                    "Train_Accuracy": train_acc,
+                    "Test_Accuracy": test_acc,
+                    "Test_Loss": test_loss,
+                }
+            )
 
         # Save epoch metrics
-        sa_timezone = pytz.timezone('Africa/Johannesburg')
+        sa_timezone = pytz.timezone("Africa/Johannesburg")
         current_time_str = datetime.now(sa_timezone).strftime("%Y%m%d_%H%M%S")
         df = pd.DataFrame(epoch_metrics)
         metrics_path = os.path.join(sim_dir, f"epoch_metrics.csv")

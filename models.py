@@ -336,9 +336,9 @@ class model_5(nn.Module):
 
 
 
-class model_6(nn.Module):
+class ResNet(nn.Module):
     def __init__(self, ResidualBlock, num_classes=10):
-        super(model_6, self).__init__()
+        super(ResNet, self).__init__()
         self.inchannel = 128
         self.bn_prod = nn.BatchNorm2d(128)
         self.dropout = nn.Dropout(0.25)
@@ -367,11 +367,6 @@ class model_6(nn.Module):
         out = out.view(out.size(0), -1)
         out = self.fc(out)
         return out
+    
 def ResNet18():
     return ResNet(ResidualBlock)
-
-
-  
-  
-
-
