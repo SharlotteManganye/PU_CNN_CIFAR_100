@@ -334,15 +334,13 @@ class model_5(nn.Module):
         return output
 
 
-
-
 class ResNet(nn.Module):
     def __init__(self, ResidualBlock, num_classes=10):
         super(ResNet, self).__init__()
         self.inchannel = 128
+        self.pi_conv_layers = ProductUnits(3, 128,2)
         self.bn_prod = nn.BatchNorm2d(128)
         self.dropout = nn.Dropout(0.25)
-        self.pi_conv_layers = ProductUnits(3, 128,2)
         self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
         self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)        
         self.fc = nn.Linear(512, num_classes)
@@ -368,5 +366,45 @@ class ResNet(nn.Module):
         out = self.fc(out)
         return out
     
-def ResNet18():
+def PI_ResNet():
     return ResNet(ResidualBlock)
+
+
+
+class ResNet2(nn.Module):
+    def __init__(self, ResidualBlock, num_classes=10):
+        super(ResNet2, self).__init__()
+        self.inchannel = 128
+        self.pi_conv_layers = ProductUnits(3, 128,2)
+        self.bn_prod = nn.BatchNorm2d(128)
+        self.dropout = nn.Dropout(0.25)
+        self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
+        self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)        
+        self.fc = nn.Linear(512, num_classes)
+        
+    def make_layer(self, block, channels, num_blocks, stride):
+        strides = [stride] + [1] * (num_blocks - 1)
+        layers = []
+        for stride in strides:
+            layers.append(block(self.inchannel, channels, stride))
+            self.inchannel = channels
+        return nn.Sequential(*layers)
+    
+    def forward(self, x):
+        y = self.pi_conv_layers(x)
+        y = self.bn_prod(y)
+        y = F.relu(y)
+        # out = F.max_pool2d(out, 2)
+        # out = self.dropout(out)
+        z = self.layer3(x)
+        z = self.layer4(z)
+        if y.shape[2:] != z.shape[2:]:
+            z = F.interpolate(z, size=y.shape[2:], mode="bilinear", align_corners=False)
+        concat = torch.cat((y, z), dim=1)
+        out = F.avg_pool2d(concat, 4)
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+        return out
+    
+def PI_ResNet_stacked():
+    return ResNet2(ResidualBlock)

@@ -76,31 +76,33 @@ def dataset_summery(train_dataset, test_dataset):
     print(f"Class distribution: {sorted_class_distribution}")
 
 
-def get_train_val_loaders(train_dataset, val_ratio, batch_size, num_workers, seed):
-    total_train_size = len(train_dataset)
-    val_size = int(val_ratio * total_train_size)
-    train_size = total_train_size - val_size
+def get_train_val_loaders(train_dataset, batch_size, num_workers, seed):
+    # total_train_size = len(train_dataset)
+    # val_size = int(val_ratio * total_train_size)
+    # train_size = total_train_size - val_size
 
-    generator = torch.Generator().manual_seed(seed)
-    train_subset, val_subset = random_split(
-        train_dataset, [train_size, val_size], generator=generator
-    )
+    # generator = torch.Generator().manual_seed(seed)
+    # train_subset, val_subset = random_split(
+    #     train_dataset, [train_size, val_size], generator=generator
+    # )
 
     train_loader = DataLoader(
-        train_subset,
+        # train_subset,
+        train_dataset,
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
     )
 
-    val_loader = DataLoader(
-        val_subset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=num_workers,
-    )
+    # val_loader = DataLoader(
+    #     val_subset,
+    #     batch_size=batch_size,
+    #     shuffle=False,
+    #     num_workers=num_workers,
+    # )
 
-    return train_loader, val_loader
+    # return train_loader, val_loader
+    return train_loader
 
 
 def get_test_loader(test_dataset, batch_size, num_workers):

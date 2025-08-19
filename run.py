@@ -105,84 +105,74 @@ if __name__ == "__main__":
     num_workers = os.cpu_count()
 
     print_section("Data Downloading")
-
+    # Dataset setup
     if data_set_id == 1:
-        # CIFAR10
-        train_dataset_mean_std = datasets.CIFAR10(
-            root="./data", train=True, download=True, transform=transforms.ToTensor()
-        )
+    # CIFAR10
+      train_dataset_mean_std = datasets.CIFAR10(
+        root="./data", train=True, download=True, transform=transforms.ToTensor()
+      )
 
-        mean, std = data_mean_std_rgb(train_dataset_mean_std)
+      mean, std = data_mean_std_rgb(train_dataset_mean_std)
 
-        # Data augmentation for training
-        train_transform = transforms.Compose(
-            [
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotation(10),
-                transforms.RandomResizedCrop(size=32, scale=(0.8, 1.0)),
-                transforms.ToTensor(),
-                transforms.Normalize(mean, std),
-            ]
-        )
+    # Data augmentation for training
+      train_transform = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
 
-        test_transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize(mean, std)]
-        )
 
-        train_dataset = datasets.CIFAR10(
-            root="data", train=True, transform=train_transform
-        )
-        test_dataset = datasets.CIFAR10(
-            root="data", train=False, transform=test_transform
-        )
+      test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
+
+      train_dataset = datasets.CIFAR10(root="data", train=True, transform=train_transform)
+      test_dataset = datasets.CIFAR10(root="data", train=False, transform=test_transform)
 
     elif data_set_id == 2:
-        # CIFAR100
-        train_dataset_mean_std = datasets.CIFAR100(
-            root="./data", train=True, download=True, transform=transforms.ToTensor()
-        )
+    # CIFAR100
+      train_dataset_mean_std = datasets.CIFAR100(
+        root="./data", train=True, download=True, transform=transforms.ToTensor()
+      )
 
-        mean, std = data_mean_std_rgb(train_dataset_mean_std)
+      mean, std = data_mean_std_rgb(train_dataset_mean_std)
 
-        train_transform = transforms.Compose(
-            [
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotation(10),
-                transforms.RandomResizedCrop(size=32, scale=(0.8, 1.0)),
-                transforms.ToTensor(),
-                transforms.Normalize(mean, std),
-            ]
-        )
+      train_transform = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
 
-        test_transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize(mean, std)]
-        )
+      test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+      ])
 
-        train_dataset = datasets.CIFAR100(
-            root="data", train=True, transform=train_transform
-        )
-        test_dataset = datasets.CIFAR100(
-            root="data", train=False, transform=test_transform
-        )
+      train_dataset = datasets.CIFAR100(root="data", train=True, transform=train_transform)
+      test_dataset = datasets.CIFAR100(root="data", train=False, transform=test_transform)
 
     elif data_set_id == 3:
-        # MNIST
-        train_dataset_mean_std = datasets.MNIST(
-            root="./data", train=True, download=True, transform=transforms.ToTensor()
-        )
+      # MNIST
+      train_dataset_mean_std = datasets.MNIST(
+        root="./data", train=True, download=True, transform=transforms.ToTensor()
+      )
 
-        mean, std = data_mean_std_greyscale(train_dataset_mean_std)
+      mean, std = data_mean_std_greyscale(train_dataset_mean_std)
 
-        train_transform = transforms.Compose([transforms.ToTensor()])
+      train_transform = transforms.Compose([
+        transforms.ToTensor(),
+         transforms.Normalize(mean, std)
 
-        test_transform = transforms.Compose([transforms.ToTensor()])
+      ])
 
-        train_dataset = datasets.MNIST(
-            root="data", train=True, transform=train_transform
-        )
-        test_dataset = datasets.MNIST(
-            root="data", train=False, transform=test_transform
-        )
+      test_transform = transforms.Compose([
+        transforms.ToTensor(),
+         transforms.Normalize(mean, std)
+       
+      ])
 
     else:
         raise ValueError("Dataset ID not recognised")
@@ -198,8 +188,8 @@ if __name__ == "__main__":
 
     dataset_summery(train_dataset, test_dataset)
 
-    train_loader, val_loader = get_train_val_loaders(
-        train_dataset, val_ratio, batch_size, num_workers, seed
+    train_loader= get_train_val_loaders(
+        train_dataset,batch_size, num_workers, seed
     )
 
     test_loader = get_test_loader(test_dataset, batch_size, num_workers)
@@ -406,12 +396,15 @@ if __name__ == "__main__":
         )
 
     elif model_id == 11:
-        print("Model 11")
-        model = ResNet(model_components.ResidualBlock)
-        print(model)
-        optimizer = torch.optim.Adam(
-            model.parameters(), lr=learning_rate, weight_decay=weight_decay
-        )
+     
+        model = PI_ResNet()
+        optimizer = torch.optim.Adam( model.parameters(), lr=learning_rate, weight_decay=weight_decay )
+    
+    elif model_id == 12:
+     
+        model = PI_ResNet_stacked()
+        optimizer = torch.optim.Adam( model.parameters(), lr=learning_rate, weight_decay=weight_decay )
+
     else:
         print("Please input a valid model ID")
 model_name_str = os.path.splitext(config_filename)[0]
@@ -427,9 +420,21 @@ print(model)
 # test_loss, test_acc = test(model, test_loader, loss_func, device, config_filename, base_results_dir='results/test', save_results=True, epoch=epochs)
 
 
-# print_section("SIMULATIONS")
+print_section("SIMULATIONS")
 
-# run_simulations(config_filename)
+run_simulations(model_class = model,
+                    train_loader =train_loader,
+                    test_loader = test_loader,
+                    optimizer =  optimizer,
+                    loss_func = loss_func,
+                    num_runs = Kfolds ,
+                    epochs = epochs,
+                    batch_size = batch_size,
+                    lr = learning_rate,
+                    seed = seed,
+                    device=device,
+                    config_filename=config_filename,
+                    results_dir="results/simulations")
 
 
 # print_section("Hyperparameter Search")
@@ -459,31 +464,31 @@ print(model)
 #     )
 
 
-print_section("Grid_Search")
+# print_section("Grid_Search")
 
-run_hyperparameter_search_grid(
-    model_id=model_id,
-    in_channels=in_channels,
-    out_channels=out_channels,
-    kernel_size=kernel_size,
-    stride=stride,
-    padding=padding,
-    image_height=image_height,
-    image_width=image_width,
-    dropout_rate=dropout_rate,
-    number_classes=number_classes,
-    fc_hidden_size=fc_hidden_size,
-    fc_dropout_rate=fc_dropout_rate,
-    num_layers=num_layers,
-    train_dataset=train_dataset,
-    val_ratio=val_ratio,
-    seed=seed,
-    device=device,
-    loss_func=loss_func,
-    epochs=epochs,
-    base_results_dir="results",
-    config_filename=config_filename,
-)
+# run_hyperparameter_search_grid(
+#     model_id=model_id,
+#     in_channels=in_channels,
+#     out_channels=out_channels,
+#     kernel_size=kernel_size,
+#     stride=stride,
+#     padding=padding,
+#     image_height=image_height,
+#     image_width=image_width,
+#     dropout_rate=dropout_rate,
+#     number_classes=number_classes,
+#     fc_hidden_size=fc_hidden_size,
+#     fc_dropout_rate=fc_dropout_rate,
+#     num_layers=num_layers,
+#     train_dataset=train_dataset,
+#     val_ratio=val_ratio,
+#     seed=seed,
+#     device=device,
+#     loss_func=loss_func,
+#     epochs=epochs,
+#     base_results_dir="results",
+#     config_filename=config_filename,
+# )
 
 
 # print_section("Cross Validition")

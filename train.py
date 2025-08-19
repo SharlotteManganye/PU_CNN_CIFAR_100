@@ -39,7 +39,7 @@ def adaptive_clip_grad_norm(parameters, clip_factor=0.01, eps=1e-3):
     return total_norm.item()
 
 
-def train(model, train_loader, optimizer, loss_func, epochs, device, config_filename, val_loader,
+def train(model, train_loader, optimizer, loss_func, epochs, device, config_filename,
           base_results_dir='results', params_subdir='model_parameters', save_outputs=False): # Removed model_save_path argument
     model.train()
     batch_size = train_loader.batch_size if train_loader else "N/A"
@@ -71,23 +71,19 @@ def train(model, train_loader, optimizer, loss_func, epochs, device, config_file
         avg_val_loss = 0.0
         avg_val_acc = 0.0
 
-        if val_loader:
-            avg_val_loss, avg_val_acc = val(model, val_loader, loss_func, device)
+
 
         epoch_data = {
             'Epoch': epoch + 1,
             'Train_Loss': avg_train_loss,
             'Train_Accuracy': avg_train_acc, # Corrected this from avg_val_acc
-            'Val_Loss': avg_val_loss,
-            'Val_Accuracy': avg_val_acc,
             'Batch_Size': batch_size,
             'Learning_Rate': learning_rate,
             'Gradient_Norm': grad_norm,
         }
         all_epoch_metrics.append(epoch_data)
         print(f'Epoch: {epoch+1}, Train Loss: {avg_train_loss:.4f}, Train Accuracy: {avg_train_acc:.2f}%')
-        if val_loader:
-            print(f'\tVal Loss: {avg_val_loss:.4f}, Val Accuracy: {avg_val_acc:.2f}%')
+
 
 
     if save_outputs:
