@@ -12,7 +12,7 @@ data:
 model:
   model_id: 0
   number_channels: 3
-  out_channels: 
+  out_channels: 32
   number_classes: 10
   num_layers : 1
 
