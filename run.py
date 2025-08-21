@@ -184,7 +184,6 @@ if __name__ == "__main__":
 
     image_shape = train_dataset[0][0].shape
 
-    print(train_dataset[0][0].shape)
 
     dataset_summery(train_dataset, test_dataset)
 

@@ -10,7 +10,7 @@ class model_1(nn.Module):
         self.prod_block = nn.Sequential(
             ProductUnits(in_channels, out_channels,kernel_size, stride=stride),
             nn.BatchNorm2d(out_channels),
-            # nn.ReLU(),
+            nn.ReLU(),
             nn.MaxPool2d(2),
             nn.Dropout(dropout_rate)
         )
@@ -48,23 +48,23 @@ class model_2(nn.Module):
         self.prod_block = nn.Sequential(
             ProductUnits(in_channels, out_channels,kernel_size, stride=stride),
             nn.BatchNorm2d(out_channels),
-            # nn.ReLU(),
+            nn.ReLU(),
             nn.MaxPool2d(2),
             nn.Dropout(dropout_rate)
         )
 
         self.prod_block2 = nn.Sequential(
-            ProductUnits( out_channels, out_channels,kernel_size, stride=stride),
-            nn.BatchNorm2d(out_channels),
-            # nn.ReLU(),
+            ProductUnits( out_channels, out_channels*2,kernel_size, stride=stride),
+            nn.BatchNorm2d(out_channels*2),
+            nn.ReLU(),
             nn.MaxPool2d(2),
             nn.Dropout(dropout_rate)
         )
 
 
         self.flatten = nn.Flatten()
-        self.fc1 = None  # will initialize later
-        self.fc2 = None  # will initialize later
+        self.fc1 = None 
+        self.fc2 = None 
         self.fc_dropout_rate = fc_dropout_rate
         self.number_classes = number_classes
 
@@ -257,7 +257,7 @@ class model_5(nn.Module):
         )
 
         self.prod_block2 = nn.Sequential(
-            ProductUnits(out_channels*2, out_channels*2, kernel_size, stride=stride),
+            ProductUnits(out_channels*2, out_channels, kernel_size, stride=stride),
             nn.BatchNorm2d(out_channels*2),
             nn.ReLU(),
             nn.MaxPool2d(2),
@@ -272,7 +272,7 @@ class model_5(nn.Module):
             nn.Dropout(dropout_rate)
         )
         self.conv_block2 = nn.Sequential(
-            nn.Conv2d(out_channels*2, out_channels*2, kernel_size=3, padding=1),
+            nn.Conv2d(out_channels*2, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels *2),
             nn.ReLU(),
             nn.MaxPool2d(2),

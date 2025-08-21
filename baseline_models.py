@@ -34,7 +34,6 @@ class baseline_model_1(nn.Module):
         self.fc2 = nn.Linear(out_channels * 2, number_classes)
 
     def _initialize_fc_layers(self, x):
-        """Initialize FC layers dynamically based on flattened size."""
         in_features = x.size(1)
         self.fc1 = nn.Linear(in_features, 256)  # hidden layer with more capacity
         self.fc2 = nn.Linear(256, self.fc2.out_features)
