@@ -16,8 +16,8 @@ class model_1(nn.Module):
         )
 
         self.flatten = nn.Flatten()
-        self.fc1 = None  # will initialize later
-        self.fc2 = None  # will initialize later
+        self.fc1 = None 
+        self.fc2 = None  
         self.fc_dropout_rate = fc_dropout_rate
         self.number_classes = number_classes
 
@@ -249,31 +249,31 @@ class model_5(nn.Module):
         super(model_5, self).__init__()
 
         self.prod_block = nn.Sequential(
-            ProductUnits(in_channels, out_channels, kernel_size, stride=stride),
-            nn.BatchNorm2d(out_channels),
+            ProductUnits(in_channels, 32, kernel_size, stride=stride),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.MaxPool2d(2),
             nn.Dropout(dropout_rate)
         )
 
         self.prod_block2 = nn.Sequential(
-            ProductUnits(out_channels*2, out_channels, kernel_size, stride=stride),
-            nn.BatchNorm2d(out_channels*2),
+            ProductUnits(64, 64, kernel_size, stride=stride),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.MaxPool2d(2),
             nn.Dropout(dropout_rate)
         )
 
         self.conv_block = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels ),
+            nn.Conv2d(in_channels, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.MaxPool2d(2),
             nn.Dropout(dropout_rate)
         )
         self.conv_block2 = nn.Sequential(
-            nn.Conv2d(out_channels*2, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels *2),
+            nn.Conv2d(64, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.MaxPool2d(2),
             nn.Dropout(dropout_rate)
