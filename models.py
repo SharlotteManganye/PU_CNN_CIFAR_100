@@ -369,42 +369,53 @@ class ResNet(nn.Module):
 def PI_ResNet():
     return ResNet(ResidualBlock)
 
+class ResNet2(nn.Module):
+    def __init__(self, ResidualBlock, num_classes=10, input_size=(3, 32, 32)):
+        super(ResNet2, self).__init__()
+        self.inchannel = 3
+        self.pi_conv_layers = ProductUnits(3, 128, 2)
+        self.bn_prod = nn.BatchNorm2d(128)   # <- this should match pi_conv_layers out_channels
+        self.dropout = nn.Dropout(0.25)
+        self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
+        self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)  
 
+        # compute fc input size automatically
+        with torch.no_grad():
+            dummy = torch.zeros(1, *input_size)  # batch=1, channels=3, HxW = 32x32
+            out = self._forward_features(dummy)
+            flattened_size = out.view(1, -1).size(1)
 
-# class ResNet2(nn.Module):
-#     def __init__(self, ResidualBlock, num_classes=10):
-#         super(ResNet2, self).__init__()
-#         self.inchannel = 128
-#         self.pi_conv_layers = ProductUnits(3, 128,2)
-#         self.bn_prod = nn.BatchNorm2d(128)
-#         self.dropout = nn.Dropout(0.25)
-#         self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
-#         self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)        
-#         self.fc = nn.Linear(512, num_classes)
+        self.fc = nn.Linear(flattened_size, num_classes)
         
-#     def make_layer(self, block, channels, num_blocks, stride):
-#         strides = [stride] + [1] * (num_blocks - 1)
-#         layers = []
-#         for stride in strides:
-#             layers.append(block(self.inchannel, channels, stride))
-#             self.inchannel = channels
-#         return nn.Sequential(*layers)
+    def make_layer(self, block, channels, num_blocks, stride):
+        strides = [stride] + [1] * (num_blocks - 1)
+        layers = []
+        for stride in strides:
+            layers.append(block(self.inchannel, channels, stride))
+            self.inchannel = channels
+        return nn.Sequential(*layers)
+
+    def _forward_features(self, x):
+        y = self.pi_conv_layers(x)
+        y = self.bn_prod(y)
+        y = F.relu(y)
+
+        z = self.layer3(x)
+        z = self.layer4(z)
+
+        if y.shape[2:] != z.shape[2:]:
+            z = F.interpolate(z, size=y.shape[2:], mode="bilinear", align_corners=False)
+
+        concat = torch.cat((y, z), dim=1)
+        out = F.avg_pool2d(concat, 4)
+        return out
     
-#     def forward(self, x):
-#         y = self.pi_conv_layers(x)
-#         y = self.bn_prod(y)
-#         y = F.relu(y)
-#         # out = F.max_pool2d(out, 2)
-#         # out = self.dropout(out)
-#         z = self.layer3(x)
-#         z = self.layer4(z)
-#         if y.shape[2:] != z.shape[2:]:
-#             z = F.interpolate(z, size=y.shape[2:], mode="bilinear", align_corners=False)
-#         concat = torch.cat((y, z), dim=1)
-#         out = F.avg_pool2d(concat, 4)
-#         out = out.view(out.size(0), -1)
-#         out = self.fc(out)
-#         return out
+    def forward(self, x):
+        out = self._forward_features(x)
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+        return out
     
-# def PI_ResNet_stacked():
-#     return ResNet2(ResidualBlock)
+
+def PI_ResNet_stacked(num_classes=10, input_size=(3, 32, 32)):
+    return ResNet2(ResidualBlock, num_classes=num_classes, input_size=input_size)
