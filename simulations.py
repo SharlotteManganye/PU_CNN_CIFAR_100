@@ -8,7 +8,6 @@ import pytz
 from train import train  
 from test import test     
 
-
 def run_simulations(model_class,
                     train_loader,
                     test_loader,
@@ -21,9 +20,11 @@ def run_simulations(model_class,
                     seed,
                     device,
                     config_filename,
-                    results_dir="results/simulations"):
+                    results_dir="results/simulations",
+                    resume_checkpoint_path=None):
 
     os.makedirs(results_dir, exist_ok=True)
+    model_name = os.path.splitext(os.path.basename(config_filename))[0]
 
     for run in range(1, num_runs + 1):
         print(f"\n=== Simulation {run} ===")
@@ -34,14 +35,20 @@ def run_simulations(model_class,
         else:
             model = model_class.to(device)
 
-        model_name = os.path.splitext(os.path.basename(config_filename))[0]
         sim_dir = os.path.join(results_dir, model_name, f"simulation_{run}")
-        os.makedirs(sim_dir, exist_ok=True) 
+        os.makedirs(sim_dir, exist_ok=True)
 
-
+        start_epoch = 1
+        if resume_checkpoint_path:
+            print(f"Resuming simulation from checkpoint: {resume_checkpoint_path}")
+            checkpoint = torch.load(resume_checkpoint_path)
+            model.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            start_epoch = checkpoint['epoch'] + 1
+            print(f"Resumed from epoch {checkpoint['epoch']}")
 
         epoch_metrics = []
-        for epoch in range(1, epochs + 1):
+        for epoch in range(start_epoch, epochs + 1):
             # Train one epoch
             epoch_result = train(
                 model=model,
@@ -51,7 +58,7 @@ def run_simulations(model_class,
                 epochs=1,   # train for one epoch at a time
                 device=device,
                 config_filename=config_filename,
-                base_results_dir=results_dir,
+                base_results_dir=sim_dir,
                 save_outputs=False
             )
 
@@ -65,7 +72,7 @@ def run_simulations(model_class,
                 loss_func,
                 device,
                 config_filename,
-                base_results_dir=results_dir
+                base_results_dir=sim_dir
             )
 
             # Save metrics
@@ -79,10 +86,19 @@ def run_simulations(model_class,
             epoch_metrics.append(metrics)
 
             print(f"Epoch {epoch}: Train Acc={train_acc:.2f}%, Test Acc={test_acc:.2f}%")
-          
 
+            # Save checkpoint
+            checkpoint = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': train_loss,
+            }
+            checkpoint_path = os.path.join(sim_dir, f"{model_name}_checkpoint_epoch_{epoch}.pt")
+            torch.save(checkpoint, checkpoint_path)
+            print(f"Checkpoint saved to {checkpoint_path}")
 
-
+        # Save all epoch metrics to CSV
         csv_filename = "epoch_metrics.csv"
         csv_path = os.path.join(sim_dir, csv_filename)
         df = pd.DataFrame(epoch_metrics)
