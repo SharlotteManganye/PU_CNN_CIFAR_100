@@ -69,7 +69,7 @@ def run_simulations(model_class,
             )
 
             # And a refactored function that performs a single test epoch
-            test_loss, test_acc = test_epoch(
+            test_loss, test_acc = test(
                 model,
                 test_loader,
                 loss_func,
