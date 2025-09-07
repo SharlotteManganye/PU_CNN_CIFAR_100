@@ -374,7 +374,7 @@ class ResNet2(nn.Module):
         super(ResNet2, self).__init__()
         self.inchannel = 3
         self.pi_conv_layers = ProductUnits(3, 128, 2)
-        self.bn_prod = nn.BatchNorm2d(128)   # <- this should match pi_conv_layers out_channels
+        self.bn_prod = nn.BatchNorm2d(128)  
         self.dropout = nn.Dropout(0.25)
         self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
         self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)  

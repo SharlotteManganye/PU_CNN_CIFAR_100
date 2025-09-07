@@ -203,17 +203,12 @@ if __name__ == "__main__":
     targets = [label for _, label in train_dataset]
     num_classes = len(set(targets))
 
-    # fc_hidden_size = 128
-    # fc_dropout_rate = 0.25
-    # epsilon = 1e-10
-    # clip_factor =  0.01
     eps = 1e-3
     kernel_size = 2
     stride = 1
     padding = 0
     weight_decay = float(1e-5)
-    # dropout_rate = 0.25
-    # learning_rate = 1e-3
+
     loss_func = nn.CrossEntropyLoss()
 
     set_component_vars(epsilon, kernel_size, stride, padding, dropout_rate)
