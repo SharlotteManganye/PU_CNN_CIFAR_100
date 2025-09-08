@@ -4,11 +4,8 @@ import pandas as pd
 from datetime import datetime
 import pytz
 
-# I've imported the train function and the test function from a file named 'train_test.py'
-# You will need to consolidate your original train.py and test.py into a single file
-# or update the imports.
 from train import train
-from test import test
+# from test import test
 
 def run_simulations(model_class,
                     train_loader,
@@ -16,7 +13,7 @@ def run_simulations(model_class,
                     optimizer,
                     loss_func,
                     num_runs,
-                    epochs, # This variable is now the total number of epochs for each run
+                    epochs, 
                     batch_size,
                     lr,
                     seed,
@@ -55,10 +52,10 @@ def run_simulations(model_class,
         print(f"Initial Learning Rate: {lr}")
         print(f"Batch Size: {batch_size}")
         
-        # This is the single, controlling loop for epochs.
+       
         for epoch in range(start_epoch, epochs + 1):
             
-            # Now, you'll call a refactored function that performs a single training epoch
+           
             train_loss, train_acc = train(
                 model=model,
                 train_loader=train_loader,
@@ -68,12 +65,12 @@ def run_simulations(model_class,
                 epoch=epoch
             )
 
-            # And a refactored function that performs a single test epoch
+          
             test_loss, test_acc = test(
                 model,
                 test_loader,
                 loss_func,
-                device
+                device 
             )
 
             metrics = {
@@ -95,7 +92,7 @@ def run_simulations(model_class,
             }
             checkpoint_path = os.path.join(sim_dir, f"{model_name}_checkpoint_epoch_{epoch}.pt")
             torch.save(checkpoint, checkpoint_path)
-            # print(f"Checkpoint saved to {checkpoint_path}")
+          
 
         csv_filename = "epoch_metrics.csv"
         csv_path = os.path.join(sim_dir, csv_filename)
