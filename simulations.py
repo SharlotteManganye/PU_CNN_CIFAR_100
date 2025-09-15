@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 import pytz
 
-from train import train
+from train import train, test
 # from test import test
 
 def run_simulations(model_class,
