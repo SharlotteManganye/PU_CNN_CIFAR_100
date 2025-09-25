@@ -333,13 +333,12 @@ class model_5(nn.Module):
             return output, prod2, conv2
         return output
 
-
 class ResNet(nn.Module):
     def __init__(self, ResidualBlock, num_classes=10):
         super(ResNet, self).__init__()
         self.inchannel = 128
-        self.pi_conv_layers = ProductUnits(3, 128,2)
-        self.bn_prod = nn.BatchNorm2d(128)
+        self.pi_conv_layers = ProductUnits(3, self.inchannel,2)
+        self.bn_prod = nn.BatchNorm2d(self.inchannel)
         self.dropout = nn.Dropout(0.25)
         self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
         self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)        

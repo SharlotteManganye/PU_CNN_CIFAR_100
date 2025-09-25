@@ -5,7 +5,6 @@ from datetime import datetime
 import pytz
 
 from train import train, test
-# from test import test
 
 def run_simulations(model_class,
                     train_loader,
@@ -25,15 +24,20 @@ def run_simulations(model_class,
     os.makedirs(results_dir, exist_ok=True)
     model_name = os.path.splitext(os.path.basename(config_filename))[0]
 
+    parent_sim_dir = os.path.join(results_dir, model_name)
+    os.makedirs(parent_sim_dir, exist_ok=True)
+
     for run in range(1, num_runs + 1):
         print(f"\n=== Simulation {run} ===")
+        if device.type == 'cuda':
+            torch.cuda.empty_cache()
 
         if isinstance(model_class, type):
             model = model_class().to(device)
         else:
             model = model_class.to(device)
 
-        sim_dir = os.path.join(results_dir, model_name, f"simulation_{run}")
+        sim_dir = os.path.join(parent_sim_dir, f"simulation_{run}")
         os.makedirs(sim_dir, exist_ok=True)
 
         start_epoch = 1
@@ -54,8 +58,7 @@ def run_simulations(model_class,
         
        
         for epoch in range(start_epoch, epochs + 1):
-            
-           
+          
             train_loss, train_acc = train(
                 model=model,
                 train_loader=train_loader,
@@ -72,6 +75,8 @@ def run_simulations(model_class,
                 loss_func,
                 device 
             )
+            if device.type == 'cuda':
+              torch.cuda.empty_cache()
 
             metrics = {
                 "Epoch": epoch,
@@ -90,7 +95,7 @@ def run_simulations(model_class,
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': train_loss,
             }
-            checkpoint_path = os.path.join(sim_dir, f"{model_name}_checkpoint_epoch_{epoch}.pt")
+            checkpoint_path = os.path.join(sim_dir,f"{model_name}_checkpoint_latest.pt")
             torch.save(checkpoint, checkpoint_path)
           
 

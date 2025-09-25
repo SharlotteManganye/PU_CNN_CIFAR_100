@@ -7,7 +7,6 @@ import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from torch import optim
 import re
-
 import utils
 from utils import *
 from models import *
@@ -183,7 +182,6 @@ if __name__ == "__main__":
     print(f"Dataset STD: {std}")
 
     image_shape = train_dataset[0][0].shape
-
 
     dataset_summery(train_dataset, test_dataset)
 
