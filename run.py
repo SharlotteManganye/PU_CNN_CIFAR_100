@@ -390,16 +390,18 @@ if __name__ == "__main__":
     elif model_id == 11:
      
         model = PI_ResNet()
-        optimizer = torch.optim.Adam( model.parameters(), lr=learning_rate, weight_decay=weight_decay )
+        optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     
     elif model_id == 12:
      
         model = PI_ResNet_stacked()
-        optimizer = torch.optim.Adam( model.parameters(), lr=learning_rate, weight_decay=weight_decay )
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     else:
         print("Please input a valid model ID")
 model_name_str = os.path.splitext(config_filename)[0]
+print(loss_func)
+print(optimizer)
 print(model)
 
 
