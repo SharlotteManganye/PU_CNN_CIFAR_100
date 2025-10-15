@@ -387,15 +387,25 @@ if __name__ == "__main__":
             model.parameters(), lr=learning_rate, weight_decay=weight_decay
         )
 
-    elif model_id == 11:
-     
+    elif model_id == 11:   
         model = PI_ResNet()
         optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     
     elif model_id == 12:
-     
         model = PI_ResNet_stacked()
         optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+    elif model_id == 13:
+     
+        model = PU_ResNet18()
+        optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+    elif model_id == 14:
+     
+        model = baseline_model_6()
+        optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+
 
     else:
         print("Please input a valid model ID")

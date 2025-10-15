@@ -258,6 +258,48 @@ class ProductUnits(nn.Module):
 
         return output
 
+class ProductUnits2(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
+        super(ProductUnits2, self).__init__()
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+
+        # Shared weights for both rho and phi
+        self.weights = nn.Parameter(torch.empty(out_channels, in_channels, kernel_size, kernel_size))
+        nn.init.kaiming_uniform_(self.weights, a=math.sqrt(5))
+
+    def forward(self, x):
+        batch_size, in_channels, height, width = x.size()
+        out_channels = self.weights.size(0)
+
+        # Unfold input into patches with padding
+        patches = F.unfold(x, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
+        patches = patches.transpose(1, 2)  # [batch_size, num_patches, in_channels * kernel_size * kernel_size]
+
+        weights = self.weights.view(out_channels, -1)
+
+        # Compute log(abs(x)) and indicator(x < 0)
+        log_abs = torch.log(torch.abs(patches) + 1e-10)
+        indicator = (patches < 0).float()
+
+        # Compute rho and phi using shared weights
+        rho = torch.einsum('oc,bpc->bpo', weights, log_abs)
+        phi = torch.einsum('oc,bpc->bpo', weights, indicator)
+
+        # Compute output
+        exp_term = torch.exp(rho)
+        cos_term = torch.cos(math.pi * phi)
+        output = exp_term * cos_term
+
+        # Calculate output dimensions with padding
+        out_height = (height + 2 * self.padding - self.kernel_size) // self.stride + 1
+        out_width = (width + 2 * self.padding - self.kernel_size) // self.stride + 1
+        output = output.transpose(1, 2).view(batch_size, out_channels, out_height, out_width)
+        return output
+
+
+
 class ConcatConv2DProductUnits(nn.Module):
     def __init__(
         self, in_channels, num_layers, initial_out_channels=16, kernel_size=3, dropout_rate=0.25
@@ -315,27 +357,54 @@ class ConcatConv2DProductUnits(nn.Module):
 
         return x
 
-
-class ResidualBlock(nn.Module):
-    def __init__(self, inchannel, outchannel, stride=1):
-        super(ResidualBlock, self).__init__()
-        self.left = nn.Sequential(
-            nn.Conv2d(inchannel, outchannel, kernel_size=3, stride=stride, padding=1, bias=False),
-            nn.BatchNorm2d(outchannel),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(outchannel, outchannel, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(outchannel)
-        )
-        self.shortcut = nn.Sequential()
-        if stride != 1 or inchannel != outchannel:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(inchannel, outchannel, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(outchannel)
-            )
-            
-    def forward(self, x):
-        out = self.left(x)
-        out = out + self.shortcut(x)
-        out = F.relu(out)
+class BasicBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(BasicBlock, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
         
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_channels != out_channels:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels)
+            )
+
+    def forward(self, x):
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out += self.shortcut(x)
+        out = self.relu(out)
+        return out
+
+class BasicBlockPU(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(BasicBlockPU, self).__init__()
+        self.pi_conv_1 = ProductUnits2(in_channels,out_channels,  kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.pi_conv_2 = ProductUnits2(in_channels,out_channels,  kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_channels != out_channels:
+            self.shortcut = nn.Sequential(
+                ProductUnits2(in_channels, out_channels, kernel_size=1, stride=stride, padding=1),
+                nn.BatchNorm2d(out_channels)
+            )
+
+    def forward(self, x):
+        out = self.pi_conv_1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        out = self.pi_conv_2(out)
+        out = self.bn2(out)
+        out += self.shortcut(x)
+        out = self.relu(out)
         return out
