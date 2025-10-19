@@ -11,7 +11,7 @@ from functools import partial
 import pyhopper as hp
 from utils import get_train_val_loaders
 
-from model_components import BasicBlock,BasicBlockPU
+from model_components import BasicBlock,ResidualBlock_PU
 
 from models import model_0, model_1, model_2, model_3, model_4, model_5, ResNet
 from baseline_models import (

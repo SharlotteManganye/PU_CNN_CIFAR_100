@@ -397,7 +397,7 @@ if __name__ == "__main__":
 
     elif model_id == 13:
      
-        model = PU_ResNet18()
+        model = PU_ResNet18(ResidualBlock,ResidualBlock_PU)
         optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     elif model_id == 14:

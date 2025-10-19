@@ -383,28 +383,51 @@ class BasicBlock(nn.Module):
         out = self.relu(out)
         return out
 
-class BasicBlockPU(nn.Module):
-    def __init__(self, in_channels, out_channels, stride=1):
-        super(BasicBlockPU, self).__init__()
-        self.pi_conv_1 = ProductUnits2(in_channels,out_channels,  kernel_size=3, stride=1, padding=1)
-        self.bn1 = nn.BatchNorm2d(out_channels)
-        self.relu = nn.ReLU(inplace=True)
-        self.pi_conv_2 = ProductUnits2(in_channels,out_channels,  kernel_size=3, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(out_channels)
-        
+class ResidualBlock(nn.Module):
+    def __init__(self, inchannel, outchannel, stride=1):
+        super(ResidualBlock, self).__init__()
+        self.left = nn.Sequential(
+            nn.Conv2d(inchannel, outchannel, kernel_size=3, stride=stride, padding=1, bias=False),
+            nn.BatchNorm2d(outchannel),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(outchannel, outchannel, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(outchannel)
+        )
         self.shortcut = nn.Sequential()
-        if stride != 1 or in_channels != out_channels:
+        if stride != 1 or inchannel != outchannel:
             self.shortcut = nn.Sequential(
-                ProductUnits2(in_channels, out_channels, kernel_size=1, stride=stride, padding=1),
-                nn.BatchNorm2d(out_channels)
+                nn.Conv2d(inchannel, outchannel, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(outchannel)
             )
-
+            
     def forward(self, x):
-        out = self.pi_conv_1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-        out = self.pi_conv_2(out)
-        out = self.bn2(out)
-        out += self.shortcut(x)
-        out = self.relu(out)
+        out = self.left(x)
+        out = out + self.shortcut(x)
+        out = F.relu(out)
+        
         return out
+
+class ResidualBlock_PU(nn.Module):
+    def __init__(self, inchannel, outchannel, stride=1):
+        super(ResidualBlock_PU, self).__init__()
+        self.left = nn.Sequential(
+            ProductUnits2(inchannel,outchannel,  kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(outchannel),
+            nn.ReLU(inplace=True),
+            ProductUnits2(outchannel,outchannel,  kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(outchannel)
+        )
+        self.shortcut = nn.Sequential()
+        if stride != 1 or inchannel != outchannel:
+            self.shortcut = nn.Sequential(
+                ProductUnits2(inchannel,outchannel, kernel_size=1, stride=stride, padding=1),
+                nn.BatchNorm2d(outchannel)
+            )
+            
+    def forward(self, x):
+        out = self.left(x)
+        out = out + self.shortcut(x)
+        out = F.relu(out)
+        
+        return out
+
