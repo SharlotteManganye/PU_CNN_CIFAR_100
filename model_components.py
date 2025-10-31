@@ -259,11 +259,10 @@ class ProductUnits(nn.Module):
         return output
 
 class ProductUnits2(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1):
         super(ProductUnits2, self).__init__()
         self.kernel_size = kernel_size
         self.stride = stride
-        self.padding = padding
 
         # Shared weights for both rho and phi
         self.weights = nn.Parameter(torch.empty(out_channels, in_channels, kernel_size, kernel_size))
@@ -272,30 +271,29 @@ class ProductUnits2(nn.Module):
     def forward(self, x):
         batch_size, in_channels, height, width = x.size()
         out_channels = self.weights.size(0)
+        padding = self.kernel_size // 2
 
-        # Unfold input into patches with padding
-        patches = F.unfold(x, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
-        patches = patches.transpose(1, 2)  # [batch_size, num_patches, in_channels * kernel_size * kernel_size]
+        patches = F.unfold(x, kernel_size=self.kernel_size, stride=self.stride, padding=padding)
+        patches = patches.transpose(1, 2)
 
         weights = self.weights.view(out_channels, -1)
 
-        # Compute log(abs(x)) and indicator(x < 0)
         log_abs = torch.log(torch.abs(patches) + 1e-10)
         indicator = (patches < 0).float()
 
-        # Compute rho and phi using shared weights
         rho = torch.einsum('oc,bpc->bpo', weights, log_abs)
         phi = torch.einsum('oc,bpc->bpo', weights, indicator)
 
-        # Compute output
         exp_term = torch.exp(rho)
         cos_term = torch.cos(math.pi * phi)
         output = exp_term * cos_term
 
-        # Calculate output dimensions with padding
-        out_height = (height + 2 * self.padding - self.kernel_size) // self.stride + 1
-        out_width = (width + 2 * self.padding - self.kernel_size) // self.stride + 1
-        output = output.transpose(1, 2).view(batch_size, out_channels, out_height, out_width)
+        # Correct output shape calculation
+        out_height = (height + 2 * padding - self.kernel_size) // self.stride + 1
+        out_width = (width + 2 * padding - self.kernel_size) // self.stride + 1
+
+        output = output.transpose(1, 2).contiguous().view(batch_size, out_channels, out_height, out_width)
+
         return output
 
 
@@ -411,16 +409,16 @@ class ResidualBlock_PU(nn.Module):
     def __init__(self, inchannel, outchannel, stride=1):
         super(ResidualBlock_PU, self).__init__()
         self.left = nn.Sequential(
-            ProductUnits2(inchannel,outchannel,  kernel_size=3, stride=1, padding=1),
+            ProductUnits2(inchannel,outchannel,  kernel_size=3, stride=1),
             nn.BatchNorm2d(outchannel),
             nn.ReLU(inplace=True),
-            ProductUnits2(outchannel,outchannel,  kernel_size=3, stride=1, padding=1),
+            ProductUnits2(outchannel,outchannel,  kernel_size=3, stride=1),
             nn.BatchNorm2d(outchannel)
         )
         self.shortcut = nn.Sequential()
         if stride != 1 or inchannel != outchannel:
             self.shortcut = nn.Sequential(
-                ProductUnits2(inchannel,outchannel, kernel_size=1, stride=stride, padding=1),
+                ProductUnits2(inchannel,outchannel, kernel_size=1, stride=stride),
                 nn.BatchNorm2d(outchannel)
             )
             

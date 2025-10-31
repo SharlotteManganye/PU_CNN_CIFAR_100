@@ -2,6 +2,7 @@ from model_components import *
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision.models import resnet18
 
 class baseline_model_1(nn.Module):
     def __init__(
@@ -358,10 +359,10 @@ class ResNet18(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         
-        self.layer1 = self._make_layer(BasicBlock, 64, 2, stride=1)
-        self.layer2 = self._make_layer(BasicBlock, 128, 2, stride=2)
-        self.layer3 = self._make_layer(BasicBlock, 256, 2, stride=2)
-        self.layer4 = self._make_layer(BasicBlock, 512, 2, stride=2)
+        self.layer1 = self._make_layer(ResidualBlock, 64, 2, stride=1)
+        self.layer2 = self._make_layer(ResidualBlock, 128, 2, stride=2)
+        self.layer3 = self._make_layer(ResidualBlock, 256, 2, stride=2)
+        self.layer4 = self._make_layer(ResidualBlock, 512, 2, stride=2)
         
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512, num_classes)
@@ -392,3 +393,4 @@ class ResNet18(nn.Module):
 
 def baseline_model_6():
     return ResNet18(num_classes=10)
+# 
