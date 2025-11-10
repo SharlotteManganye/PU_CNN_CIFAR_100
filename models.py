@@ -435,7 +435,7 @@ class PU_ResNet18(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU()
         )
-        self.layer1 = self.make_layer(ResidualBlock_PU, 64, 2, stride=1)
+        self.layer1 = self.make_layer(ResidualBlock, 64, 2, stride=1)
         self.layer2 = self.make_layer(ResidualBlock, 128, 2, stride=2)
         self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
         self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)        
