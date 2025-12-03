@@ -1,16 +1,13 @@
-# Python cache files
+# Colab / Google Drive artifacts
+.ipynb_checkpoints/
 __pycache__/
-*.py[cod]
-
-# Virtual environment directories
-venv/
-env/
-ENV/
-
-# Data directories
-data/*
-!data/.gitkeep
-
-# Results directories
-results/*
-!results/.gitkeep
+*.pyc
+*.pyo
+*.pyd
+.env
+.DS_Store
+.colab/
+# Large data/output (adjust to your project)
+data/
+outputs/
+logs/
