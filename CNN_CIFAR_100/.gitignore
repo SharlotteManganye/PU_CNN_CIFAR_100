@@ -1,0 +1,13 @@
+# Colab / Google Drive artifacts
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.DS_Store
+.colab/
+# Large data/output (adjust to your project)
+data/
+outputs/
+logs/

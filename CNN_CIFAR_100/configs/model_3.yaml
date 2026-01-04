@@ -1,0 +1,30 @@
+program:
+  seed: 42
+  gen_rand_seed: True
+  gpu: False
+
+data:
+  data_set_id: 1  # 1: CIFAR 10, 2: CIFAR 100, 3: MNIST
+  test_ratio: 0.2
+  val_ratio: 0.2
+
+model:
+  model_id: 3
+  number_channels: 3
+  out_channels: 32
+  number_classes: 10
+  num_layers : 1
+
+training:
+  batch_size: 64
+  epochs: 150
+  learning_rate: 0.0001
+  epsilon: 1e-10
+  grad_epsilon: 1e-3
+  clip_factor: 0.01
+  Kfolds: 5
+  fc_hidden_size: 0.25
+  fc_hidden_size: 128
+  fc_dropout_rate:  0.25
+  dropout_rate:  0.25
+
