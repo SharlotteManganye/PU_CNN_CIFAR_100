@@ -336,7 +336,7 @@ class model_5(nn.Module):
         return output
 
 class ResNet(nn.Module):
-    def __init__(self, ResidualBlock, num_classes=10):
+    def __init__(self, ResidualBlock, num_classes=100):
         super(ResNet, self).__init__()
         self.inchannel = 128
         self.pi_conv_layers = ProductUnits(3, self.inchannel,2)
@@ -371,7 +371,7 @@ def PI_ResNet():
     return ResNet(BasicBlock)
 
 class ResNet2(nn.Module):
-    def __init__(self, ResidualBlock, num_classes=10, input_size=(3, 32, 32)):
+    def __init__(self, ResidualBlock, num_classes=100, input_size=(3, 32, 32)):
         super(ResNet2, self).__init__()
         self.inchannel = 3
         self.pi_conv_layers = ProductUnits(3, 128, 2)
@@ -418,7 +418,7 @@ class ResNet2(nn.Module):
         return out
     
 
-def PI_ResNet_stacked(num_classes=10, input_size=(3, 32, 32)):
+def PI_ResNet_stacked(num_classes=100, input_size=(3, 32, 32)):
     return ResNet2(BasicBlock, num_classes=num_classes, input_size=input_size)
 
 
@@ -426,7 +426,7 @@ def PI_ResNet_stacked(num_classes=10, input_size=(3, 32, 32)):
 
 
 class PU_ResNet18(nn.Module):
-    def __init__(self, ResidualBlock,ResidualBlock_PU, num_classes=10):
+    def __init__(self, ResidualBlock,ResidualBlock_PU, num_classes=100):
         super(PU_ResNet18, self).__init__()
         self.inchannel = 64
         self.conv1 = nn.Sequential(
