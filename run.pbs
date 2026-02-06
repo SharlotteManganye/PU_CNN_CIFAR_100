@@ -13,7 +13,7 @@ source /etc/profile.d/modules.sh
 ulimit -s unlimited
 echo 'Run Starting'
 
-cd /home/smanganye/lustre/Convolutional-Neural-Networks
+cd /home/smanganye/lustre/PU_CNN_CIFAR_100
 
 
 module load chpc/python/anaconda/3-2021.11
