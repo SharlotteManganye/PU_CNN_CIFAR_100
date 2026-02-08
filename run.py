@@ -133,7 +133,7 @@ if __name__ == "__main__":
     elif data_set_id == 2:
     # CIFAR100
       train_dataset_mean_std = datasets.CIFAR100(
-        root="./data", train=True, download=True, transform=transforms.ToTensor()
+        root="./data", train=True, download=False, transform=transforms.ToTensor()
       )
 
       mean, std = data_mean_std_rgb(train_dataset_mean_std)
