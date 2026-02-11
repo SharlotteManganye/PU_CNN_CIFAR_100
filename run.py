@@ -139,7 +139,7 @@ if __name__ == "__main__":
       mean, std = data_mean_std_rgb(train_dataset_mean_std)
 
       train_transform = transforms.Compose([
-        transforms.RandomCrop(32, padding=4),
+        transforms.RandomCrop(32, padding=4,padding_mode='reflect'),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
