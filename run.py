@@ -405,6 +405,10 @@ if __name__ == "__main__":
         model = baseline_model_6()
         optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
+    elif model_id == 15:
+     
+        model = baseline_model_7()
+        optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 
     else:
