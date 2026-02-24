@@ -13,8 +13,9 @@ import argparse # Needed if you keep the __main__ block for standalone testing
 
 # --- Import your model definitions ---
 # Ensure these paths are correct relative to where this script is run or in your PYTHONPATH
-from models import model_0, model_1, model_2, model_3, model_4, model_5
-from baseline_models import baseline_model_1, baseline_model_2, baseline_model_3, baseline_model_4, baseline_model_5
+from models import model_0, model_1, model_2, model_3, model_4, model_5,PI_ResNet,PI_ResNet_stacked,PU_ResNet18
+
+from baseline_models import baseline_model_1, baseline_model_2, baseline_model_3, baseline_model_4, baseline_model_5,baseline_model_6,baseline_model_7
 
 # Assuming utils.py contains load_config and print_section
 from utils import load_config, print_section
@@ -79,34 +80,57 @@ def save_feature_maps_from_model(model, loader, mean, std, device, model_name, o
     print(f"Feature maps saved to {output_dir}")
 
 # --- The get_full_dataset_with_targets function (as provided before) ---
-def get_full_dataset_with_targets(data_set_id, transform):
+def get_full_dataset_with_targets(data_set_id):
     """
-    Loads the full dataset (train + test) and returns targets, mean, and std.
-    (Full implementation as previously provided)
+    Loads the full dataset with specific augmentations and normalization.
     """
+    # Placeholder functions for mean/std calculation 
+    # (Ensure these are defined in your utils or script)
+    def get_stats(dataset, is_rgb=True):
+        if is_rgb:
+            return data_mean_std_rgb(dataset)
+        return data_mean_std_greyscale(dataset)
+
     if data_set_id == 1:  # CIFAR 10
-        train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-        test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
-        full_dataset = torch.utils.data.ConcatDataset([train_dataset, test_dataset])
+        raw_data = datasets.CIFAR10(root='./data', train=True, download=True, transform=transforms.ToTensor())
+        mean, std = get_stats(raw_data, is_rgb=True)
+        
+        test_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
+        
+        train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
+        test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=test_transform)
         targets = torch.cat((torch.tensor(train_dataset.targets), torch.tensor(test_dataset.targets)))
-        mean = (0.4914, 0.4822, 0.4465)
-        std = (0.2471, 0.2435, 0.2616)
+
     elif data_set_id == 2:  # CIFAR 100
-        train_dataset = datasets.CIFAR100(root='./data', train=True, download=True, transform=transform)
-        test_dataset = datasets.CIFAR100(root='./data', train=False, download=True, transform=transform)
-        full_dataset = torch.utils.data.ConcatDataset([train_dataset, test_dataset])
+        raw_data = datasets.CIFAR100(root='./data', train=True, download=True, transform=transforms.ToTensor())
+        mean, std = get_stats(raw_data, is_rgb=True)
+        
+        test_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
+        
+        train_dataset = datasets.CIFAR100(root='./data', train=True, download=True, transform=test_transform)
+        test_dataset = datasets.CIFAR100(root='./data', train=False, download=True, transform=test_transform)
         targets = torch.cat((torch.tensor(train_dataset.targets), torch.tensor(test_dataset.targets)))
-        mean = (0.5071, 0.4865, 0.4409)
-        std = (0.2673, 0.2564, 0.2762)
+
     elif data_set_id == 3:  # MNIST
-        train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-        test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-        full_dataset = torch.utils.data.ConcatDataset([train_dataset, test_dataset])
-        targets = torch.cat((torch.tensor(train_dataset.targets), torch.tensor(test_dataset.targets)))
-        mean = (0.1307,)
-        std = (0.3081,)
-    else:
-        raise ValueError(f"Invalid data_set_id: {data_set_id}")
+        raw_data = datasets.MNIST(root='./data', train=True, download=True, transform=transforms.ToTensor())
+        mean, std = get_stats(raw_data, is_rgb=False)
+        
+        test_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
+        
+        train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=test_transform)
+        test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=test_transform)
+        targets = torch.cat((train_dataset.targets, test_dataset.targets))
+
+    full_dataset = torch.utils.data.ConcatDataset([train_dataset, test_dataset])
     return full_dataset, targets, mean, std
 
 # --- Main function to run the feature map saving process ---
@@ -153,28 +177,205 @@ def run_feature_map_saver(config_filename, fold_number=1, num_maps=16):
 
     # Instantiate the correct model based on model_id
     print(f"Instantiating Model ID: {model_id}...")
-    if model_id == 0:
-        model = model_0(number_channels, out_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate)
-    elif model_id == 1:
-        model = model_1(number_channels, out_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate)
+
+    if model_id == 1:
+        model = model_1(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
     elif model_id == 2:
-        model = model_2(number_channels, out_channels, image_height, image_width, fc_dropout_rate, fc_hidden_size, number_classes, fc_dropout_rate)
+        model = model_2(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
     elif model_id == 3:
-        model = model_3(number_channels, out_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate)
+        model = model_3(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+            image_height,
+            image_width,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=float(learning_rate), weight_decay=weight_decay
+        )
+
+    elif model_id == 0:
+        model = model_0(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+            image_height,
+            image_width,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
     elif model_id == 4:
-        model = model_4(number_channels, out_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate, num_layers)
+        model = model_4(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+            image_height,
+            image_width,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
     elif model_id == 5:
-        model = model_5(number_channels, out_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate, num_layers)
+        model = model_5(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+            image_height,
+            image_width,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
     elif model_id == 6:
-        model = baseline_model_1(number_channels, out_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate)
+        model = baseline_model_1(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
     elif model_id == 7:
-        model = baseline_model_2(number_channels, out_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate)
+        model = baseline_model_2(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dropout_rate,
+            image_height,
+            image_width,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
     elif model_id == 8:
-        model = baseline_model_3(number_channels, out_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate)
+        model = baseline_model_3(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            dropout_rate,
+            number_classes,
+            fc_dropout_rate,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
     elif model_id == 9:
-        model = baseline_model_4(in_channels=number_channels, out_channels=out_channels, image_height=image_height, image_width=image_width, fc_hidden_size=fc_hidden_size, number_classes=number_classes, fc_dropout_rate=fc_dropout_rate, num_layers=num_layers)
+        model = baseline_model_4(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dropout_rate,
+            image_height,
+            image_width,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+            num_layers,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
     elif model_id == 10:
-        model = baseline_model_5(number_channels, out_channels, image_height, image_width, fc_hidden_size, number_classes, fc_dropout_rate, num_layers)
+        model = baseline_model_5(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dropout_rate,
+            image_height,
+            image_width,
+            fc_hidden_size,
+            number_classes,
+            fc_dropout_rate,
+            num_layers,
+        )
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
+
+    elif model_id == 11:   
+        model = PI_ResNet()
+        optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    
+    elif model_id == 12:
+        model = PI_ResNet_stacked()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+    elif model_id == 13:
+     
+        model = PU_ResNet18(ResidualBlock,ResidualBlock_PU)
+        optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+    elif model_id == 14:
+     
+        model = baseline_model_6()
+        optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+    elif model_id == 15:
+     
+        model = baseline_model_7()
+        optimizer =optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     else:
         raise ValueError(f"Invalid model ID: {model_id}")
 

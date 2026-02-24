@@ -380,10 +380,9 @@ class ResNet2(nn.Module):
         self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)        
         self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)  
 
-        # compute fc input size automatically
         with torch.no_grad():
-            dummy = torch.zeros(1, *input_size)  # batch=1, channels=3, HxW = 32x32
-            out = self._forward_features(dummy)
+            dummy = torch.zeros(1, *input_size)
+            out, _ = self._forward_features(dummy, return_maps=True)
             flattened_size = out.view(1, -1).size(1)
 
         self.fc = nn.Linear(flattened_size, num_classes)
@@ -396,25 +395,32 @@ class ResNet2(nn.Module):
             self.inchannel = channels
         return nn.Sequential(*layers)
 
-    def _forward_features(self, x):
+    def _forward_features(self, x, return_maps=False):
         y = self.pi_conv_layers(x)
         y = self.bn_prod(y)
         y = F.relu(y)
 
-        z = self.layer3(x)
-        z = self.layer4(z)
+        z_mid = self.layer3(x) 
+        z = self.layer4(z_mid)
 
         if y.shape[2:] != z.shape[2:]:
             z = F.interpolate(z, size=y.shape[2:], mode="bilinear", align_corners=False)
 
         concat = torch.cat((y, z), dim=1)
         out = F.avg_pool2d(concat, 4)
-        return out
+        
+        if return_maps:
+            return out, (y, z)
+        return out, None
     
-    def forward(self, x):
-        out = self._forward_features(x)
-        out = out.view(out.size(0), -1)
+    def forward(self, x, return_feature_maps=False):
+        feat_out, maps = self._forward_features(x, return_maps=return_feature_maps)
+        
+        out = feat_out.view(feat_out.size(0), -1)
         out = self.fc(out)
+        
+        if return_feature_maps:
+            return out, maps[0], maps[1]
         return out
     
 

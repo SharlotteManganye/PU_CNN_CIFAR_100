@@ -430,19 +430,19 @@ print(model)
 
 print_section("SIMULATIONS")
 
-run_simulations(model_class = model,
-                    train_loader =train_loader,
-                    test_loader = test_loader,
-                    optimizer =  optimizer,
-                    loss_func = loss_func,
-                    num_runs = Kfolds ,
-                    epochs = epochs,
-                    batch_size = batch_size,
-                    lr = learning_rate,
-                    seed = seed,
-                    device=device,
-                    config_filename=config_filename,
-                    results_dir="results/simulations")
+# run_simulations(model_class = model,
+#                     train_loader =train_loader,
+#                     test_loader = test_loader,
+#                     optimizer =  optimizer,
+#                     loss_func = loss_func,
+#                     num_runs = Kfolds ,
+#                     epochs = epochs,
+#                     batch_size = batch_size,
+#                     lr = learning_rate,
+#                     seed = seed,
+#                     device=device,
+#                     config_filename=config_filename,
+#                     results_dir="results/simulations")
 
 
 # print_section("Hyperparameter Search")
@@ -503,5 +503,5 @@ run_simulations(model_class = model,
 
 # run_cross_validation(config_filename,Kfolds, base_results_dir='results' )
 
-# print_section("Feature Maps Visualization")
-# save_feature_maps_from_model(model, train_loader, mean, std, device, model_name=model_name_str, output_base_dir="results/feature_maps", num_maps=16)
+print_section("Feature Maps Visualization")
+save_feature_maps_from_model(model, train_loader, mean, std, device, model_name=model_name_str, output_base_dir="results/feature_maps", num_maps=16)
